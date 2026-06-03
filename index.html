@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 앙상블 국내증시 대시보드</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f5f6f8; --card:#ffffff; --ink:#1a1d21; --muted:#5b636e; --line:#e6e9ee;
+  --up:#d23f3f; --down:#1d6fd0; --green:#1f9d5b; --amber:#d98a00; --red:#d23f3f; --grey:#8a9099;
+  --accent:#3b5bdb; --accent-soft:#eef1fe;
+  --shadow:0 1px 2px rgba(20,25,40,.06),0 4px 14px rgba(20,25,40,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.2px}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+
+.topbar{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 16px;margin-bottom:14px}
+.topbar .title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.title h1{font-size:17px}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:#fff4e5;color:#a05a00;border:1px solid #ffe0b2;white-space:nowrap}
+.badge.kr{background:#e7f0fb;color:#1857a8;border-color:#cfe0f7}
+.ticks{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px}
+.tick{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.tick .k{font-size:11px;color:var(--muted)}.tick .v{font-size:15px;font-weight:700;margin-top:1px}.tick .c{font-size:11px;font-weight:600;margin-top:1px}
+.up{color:var(--up)}.down{color:var(--down)}
+.asof{font-size:11px;color:var(--muted);margin-top:8px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:15px 16px;margin-bottom:14px}
+.card h2{font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.card .sub{font-size:11px;color:var(--muted);margin-bottom:11px}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:880px){.grid2{grid-template-columns:1fr}}
+
+/* market briefing */
+.brief{margin:0;padding-left:0;list-style:none}
+.brief li{padding:7px 0;border-top:1px dashed var(--line);font-size:13px}
+.brief li:first-child{border-top:0}
+.brief .tag{font-size:10px;font-weight:700;padding:1px 7px;border-radius:6px;margin-right:6px}
+.t-pos{background:#fdeaea;color:#b32a2a}.t-neg{background:#e7f0fb;color:#1857a8}.t-neu{background:#eef0f3;color:#5b636e}
+.scn .row{border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-bottom:8px}
+.scn .row .h{font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.scn .row .p{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.p-bull{background:#e7f6ee;color:#157a45}.p-base{background:#eef0f3;color:#444}.p-bear{background:#fdeaea;color:#b32a2a}
+.scn .row .d{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* lookup */
+.lookbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.lookbar input{flex:1;min-width:200px;font-size:14px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;outline:none}
+.lookbar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,91,219,.10)}
+.lookbar button{font-size:13px;font-weight:700;padding:0 16px;border:0;border-radius:10px;background:var(--accent);color:#fff;cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{font-size:11px;color:var(--accent);background:var(--accent-soft);border:1px solid #d9e0fb;border-radius:999px;padding:3px 10px;cursor:pointer}
+.chip:hover{background:#e2e8ff}
+
+.detail{border:1px solid var(--line);border-radius:12px;padding:14px;background:linear-gradient(180deg,#fbfcff,#fff)}
+.detail .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.detail .dnm{font-size:18px;font-weight:800}
+.detail .dcode{font-size:12px;color:var(--muted);font-weight:600}
+.lite{font-size:13px;font-weight:800;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.lite-g{background:#e7f6ee;color:#157a45}.lite-y{background:#fff4e0;color:#9a6400}.lite-r{background:#fdeaea;color:#b32a2a}
+.dsum{font-size:14px;margin:10px 0;padding:10px 12px;background:var(--bg);border-radius:9px;border:1px solid var(--line)}
+.gauge{margin:12px 0 4px}
+.gauge .glabels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px}
+.gtrack{position:relative;height:14px;border-radius:999px;background:linear-gradient(90deg,#f3c1c1,#f0e0a8,#bfe6cd)}
+.gmark{position:absolute;top:-4px;width:6px;height:22px;border-radius:3px;background:#1a1d21;transform:translateX(-3px);box-shadow:0 0 0 2px #fff}
+.gtone{font-size:12px;font-weight:700;margin-top:5px;text-align:center;color:#3a4048}
+.dcols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media(max-width:560px){.dcols{grid-template-columns:1fr}.detail .dnm{font-size:16px}}
+.dbox{border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+.dbox .bt{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.dbox ul{margin:0;padding-left:16px;font-size:12.5px}.dbox li{margin:3px 0}
+.dbox .risk{font-size:12.5px;color:#a33}
+.dmeta{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;align-items:center}
+.mbadge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px;background:#eef0f3;color:#444}
+.aibadge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px;background:#f0ecff;color:#5b3ec0}
+.conf-h{background:#e7f6ee;color:#157a45}.conf-m{background:#fff4e0;color:#9a6400}.conf-l{background:#eef0f3;color:#5b636e}
+.dsrc{font-size:11px;margin-top:8px;display:block}
+.livebox{margin:8px 0;padding:8px 11px;border-radius:9px;background:#eef7f0;border:1px solid #cfe9d6;font-size:14px}
+.livebox.none{background:#f3f4f6;border-color:#e6e9ee;color:#8a9099;font-size:12px}
+.livebox .lk{font-size:11px;color:#5b636e;margin-right:4px}
+.livep{font-size:11px;font-weight:800;margin-top:3px;display:block}
+.up{color:#d23f3f}.down{color:#1d6fd0}.flat{color:#5b636e}
+.livebar{font-size:11.5px;color:#157a45;background:#eef7f0;border:1px solid #cfe9d6;border-radius:9px;padding:7px 11px;margin-bottom:10px}
+.livebar.off{color:#9a6400;background:#fff7ea;border-color:#ffe6bf}
+.aibtnrow{margin-top:11px}
+.aibtn{font-size:12px;font-weight:700;padding:8px 14px;border:0;border-radius:9px;background:#5b3ec0;color:#fff;cursor:pointer}
+.aibtn:hover{background:#4d33a8}
+.aiout{margin-top:10px;padding:11px 13px;border-radius:10px;background:#f5f2ff;border:1px solid #e0d8fb;font-size:13px;line-height:1.6}
+.aiout.off{background:#f3f4f6;border-color:#e6e9ee;color:#8a9099}
+.aihd{font-size:11px;font-weight:700;color:#5b3ec0;margin-bottom:6px}
+.ainote{font-size:10px;color:#8a9099;margin-top:6px}
+
+/* reco lists */
+.reco{display:flex;flex-direction:column;gap:7px}
+.rrow{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer;transition:.1s}
+.rrow:hover{border-color:var(--accent);background:#fafbff}
+.rlite{font-size:15px;flex:none}
+.rmain{flex:1;min-width:0}
+.rnm{font-weight:700;font-size:13px}
+.rnm .rcode{font-weight:500;color:var(--muted);font-size:11px;margin-left:4px}
+.rsum{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rright{flex:none;text-align:right}
+.rai{font-size:10px;font-weight:700;color:#5b3ec0;background:#f0ecff;border-radius:6px;padding:1px 6px}
+.rsec{font-size:10px;color:var(--grey);display:block;margin-top:2px}
+
+/* AI compare */
+.aicmp table{width:100%;border-collapse:collapse;font-size:12px}
+.aicmp th,.aicmp td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.aicmp th{font-size:11px;color:var(--muted)}
+.aicmp .role{font-size:10px;color:var(--grey);display:block}
+.verdict{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
+.v-con{background:#e7f6ee;color:#157a45}.v-dif{background:#fff1df;color:#9a6400}.v-solo{background:#eef0f3;color:#5b636e}
+.consensus-row{margin-top:10px;font-size:12px;padding:9px 11px;border-radius:9px;background:var(--accent-soft);border:1px solid #d9e0fb}
+
+/* guide */
+.profgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px}
+.profbtn{cursor:pointer;border:1.5px solid var(--line);background:var(--bg);border-radius:11px;padding:9px 11px;text-align:left}
+.profbtn .pt{font-weight:700;font-size:13px}.profbtn .pd{font-size:11px;color:var(--muted);margin-top:2px}
+.profbtn.active{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(59,91,219,.10)}
+.alloc{display:flex;height:24px;border-radius:7px;overflow:hidden;margin:6px 0 4px;border:1px solid var(--line)}
+.alloc div{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+.a-eq{background:#3b5bdb}.a-bd{background:#5b9b6f}.a-csh{background:#9aa3ad}
+.gtable{width:100%;border-collapse:collapse;font-size:12px}
+.gtable td{padding:6px 4px;border-bottom:1px solid var(--line)}.gtable td:first-child{color:var(--muted)}.gtable td:last-child{font-weight:600;text-align:right}
+
+.mon{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mon .m{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+.mon .m .k{font-size:11px;color:var(--muted)}.mon .m .v{font-size:13px;font-weight:700}
+
+.disc{background:#fffbf3;border:1px solid #ffe6bf;border-radius:12px;padding:13px 16px;font-size:11.5px;color:#6b5326;line-height:1.6}
+.disc b{color:#8a5a00}
+.foot{text-align:center;font-size:11px;color:var(--muted);margin:14px 0 6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="title">
+      <h1>🛰️ AI 앙상블 국내증시 대시보드</h1>
+      <span class="badge kr">🇰🇷 한국 증시 중심</span>
+      <span class="badge">⚠ 정보 도구 · 투자자문 아님</span>
+      <span class="badge" id="modebadge" style="background:#eef1fe;color:#3b3a86;border-color:#d9e0fb"></span>
+    </div>
+    <div class="ticks" id="ticks"></div>
+    <div class="asof" id="asof"></div>
+  </div>
+
+  <!-- 1. 시장 분석 -->
+  <div class="grid2">
+    <div class="card">
+      <h2><span class="dot" style="background:var(--up)"></span>① 국내 증시 분석 — 지금 무슨 일이</h2>
+      <div class="sub">여러 AI 관점(수집·추론·종합·검증)으로 정리한 핵심 동인 · 실시간 AI 호출은 Claude 1종 · 2026-05-30</div>
+      <ul class="brief" id="brief"></ul>
+    </div>
+    <div class="card">
+      <h2><span class="dot" style="background:var(--accent)"></span>② 향후 1~6개월 전망</h2>
+      <div class="sub">컨센서스: '신중한 강세' — 상승 추세 속 변동성·반도체 쏠림 병존</div>
+      <div class="scn" id="scenarios"></div>
+    </div>
+  </div>
+
+  <!-- 2. 종목 조회 (HERO) -->
+  <div class="card">
+    <h2><span class="dot" style="background:var(--green)"></span>③ 종목 조회 — 초보자 전망 신호등 🚦</h2>
+    <div class="sub">종목명이나 코드를 입력하면 한눈에 이해되는 전망을 보여줍니다. 아래 추천·비추천 목록을 눌러도 여기에 표시됩니다.</div>
+    <div class="lookbar">
+      <input id="q" list="stocklist" placeholder="예: 삼성전자, 005930, SK하이닉스, 카카오…" autocomplete="off">
+      <datalist id="stocklist"></datalist>
+      <button id="qbtn">조회</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="livebar" id="livestatus">💹 라이브 시세를 불러오는 중…</div>
+    <div style="font-size:11px;color:var(--muted);margin:-4px 0 10px;">코스피 838종목은 이름·코드 검색 · 코스닥은 6자리 코드 입력 시 일부 지원(구글 미커버 있음)</div>
+    <div class="detail" id="detail"></div>
+  </div>
+
+  <!-- 3. 추천/비추천 -->
+  <div class="grid2">
+    <div class="card">
+      <h2><span class="dot" style="background:var(--green)"></span>④ AI 관심 종목 TOP 10 🟢</h2>
+      <div class="sub">AI가 근거·수급·실적으로 정리한 관심 종목(정보 정리). 행을 누르면 위 조회창에 상세 표시. <b>매수 권유 아님.</b> ‘확신도 n/4’는 4개 AI 동시투표가 아니라 분석 확신도를 4단계로 환산한 표시입니다.</div>
+      <div class="reco" id="buylist"></div>
+    </div>
+    <div class="card">
+      <h2><span class="dot" style="background:var(--red)"></span>⑤ AI 주의·점검 종목 TOP 10 🔴</h2>
+      <div class="sub">고평가·실적부진·과열·수급악화 등 '지금은 주의'할 근거가 있는 종목(정보 정리). <b>매도 권유 아님.</b></div>
+      <div class="reco" id="avoidlist"></div>
+    </div>
+  </div>
+
+  <!-- 4. AI 비교 + 가이드 -->
+  <div class="grid2">
+    <div class="card aicmp">
+      <h2><span class="dot" style="background:var(--amber)"></span>⑥ 4개 AI 의견 비교</h2>
+      <div class="sub">같은 질문을 4개 AI에 던졌을 때의 역할·결론. <b>합의=신뢰 보증이 아니라 의견 분산 신호</b></div>
+      <table><thead><tr><th>AI / 역할</th><th>결론</th><th>판정</th></tr></thead><tbody id="aibody"></tbody></table>
+      <div class="consensus-row" id="consensus"></div>
+    </div>
+    <div class="card">
+      <h2><span class="dot" style="background:var(--accent)"></span>⑦ 투자 가이드 <span style="font-weight:500;color:var(--muted);font-size:12px">(<b id="guidelabel">중립형</b>)</span></h2>
+      <div class="sub">성향을 고르면 배분 예시가 바뀝니다. 절대 금액은 본인이 비율에 맞춰 결정하세요. (국내 집중)</div>
+      <div class="profgrid" id="profgrid"></div>
+      <div class="alloc" id="alloc"></div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px"><span style="color:#3b5bdb">■</span> 주식 <span style="color:#5b9b6f;margin-left:6px">■</span> 채권 <span style="color:#9aa3ad;margin-left:6px">■</span> 현금</div>
+      <table class="gtable" id="gtable"></table>
+    </div>
+  </div>
+
+  <!-- 5. 모니터링 -->
+  <div class="card">
+    <h2><span class="dot" style="background:var(--grey)"></span>⑧ 핵심 모니터링 지표</h2>
+    <div class="sub">이 숫자들이 흔들리면 위 전망을 다시 확인하세요</div>
+    <div class="mon" id="monitor"></div>
+  </div>
+
+  <div class="disc">
+    <b>면책 고지</b> — 본 프로그램은 여러 AI의 분석을 비교·정리한 <b>정보 도구</b>이며 투자 자문이 아닙니다. 특정 종목의 매수·매도를 권유하지 않습니다. <b>본 도구 제공자는 투자자문업·유사투자자문업 등록/신고 사업자가 아니며, 투자 원금 손실이 발생할 수 있습니다.</b> '관심/주의' 분류와 '확신도 n/4'는 정보 정리용 표시이지 4개 AI의 실제 동시투표 결과가 아닙니다.
+    '추천/비추천'과 신호등은 2026-05-30 기준 공개 보도·리포트 근거의 정보 정리이며, AI는 오류·환각을 포함할 수 있고 과거가 미래를 보장하지 않습니다.
+    종목코드·수치는 매매 전 거래소(KRX)에서 재확인하시고, 모든 투자 판단과 책임은 이용자 본인에게 있습니다. 시세는 Google Finance(약 20분 지연) 기준이며, 코스닥 일부는 미지원입니다. 코스닥 포함 전 종목 체결가 실시간은 한국투자증권 KIS 연동 시 제공됩니다.
+  </div>
+  <div class="foot">생성: 국내주식·해외주식·거시리스크·AI·플랫폼·마케팅 6개 전문가 에이전트 협업 · 분석 기준 2026-05-30</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script>
+/* ===== 시세(스냅샷) ===== */
+const ticks=[
+  {k:"코스피",v:"8,200",c:"신고가권(5/27)",dir:"up",key:"KOSPI"},
+  {k:"코스닥",v:"1,060선",c:"순환매 ·스냅샷",dir:"up"},
+  {k:"USD/KRW",v:"1,494~1,507",c:"약세 우려",dir:"down",key:"USDKRW"},
+  {k:"외국인 수급",v:"순매도",c:"5월초 약 20조 ·스냅샷",dir:"down"},
+  {k:"반도체 수출",v:"+173.5%",c:"4월 ·스냅샷",dir:"up"},
+  {k:"반도체 비중",v:"49%",c:"상위4 쏠림 ·스냅샷",dir:"down"}
+];
+/* ===== 시장 브리핑 ===== */
+let brief=[
+  {t:"현황",c:"t-pos",x:"코스피가 5월 15일 사상 첫 8,000선 돌파, 5월 27일 8,200선까지 올라 신고가 행진. 코스닥은 1,060선대."},
+  {t:"동인",c:"t-pos",x:"반도체(삼성전자·SK하이닉스)가 5월 지수 급등의 약 85%를 기여하는 AI·HBM 실적 장세. 방산·조선·원전·금융 밸류업이 순환매로 가세."},
+  {t:"주의",c:"t-neg",x:"8거래일 만에 20% 급등해 과매수 영역 진입. 외국인 차익실현(5월초 약 20조 순매도)·장중 4%대 급락 등 변동성 확대. 시총상위 4종목 비중 49% 쏠림 유의."}
+];
+let scenarios=[
+  {pl:"상승 시나리오",h:"강세",p:"p-bull",d:"AI·HBM 실적 장세 지속 + 방산·조선·원전 순환매 확산. 증권사 하반기 코스피 1만 목표 제시."},
+  {pl:"중립 시나리오",h:"기본",p:"p-base",d:"신중한 강세. 추가 상승 여지 있으나 단기 급등 부담으로 변동성 확대 구간 반복."},
+  {pl:"조정 시나리오",h:"약세",p:"p-bear",d:"반도체 쏠림 속 업황·수급 둔화 시 지수 전체 충격. 외국인 매도·환율·중동 변수 트리거."}
+];
+/* ===== 20 종목 DB ===== */
+// g:buy/avoid, light:g/y/r, score:0~100(높을수록 긍정), pts:강점/우려, ai:합의도
+let stocks=[
+ // 추천 10
+ {g:"buy",code:"005930",name:"삼성전자",sector:"반도체",light:"g",score:62,tone:"중립~낙관",conf:"상",ai:"4/4",
+  sum:"AI 메모리(HBM) 호황으로 사상 최대 실적을 내는 한국 대표 대형주.",
+  pts:["2026년 1분기 영업이익 57.2조원으로 급증","HBM4 세계 최초 양산 등 AI 메모리 주도"],
+  risk:"단기 급등에 따른 과열·고평가 부담, 외국인 수급 변동성.",
+  out:"AI 투자 사이클이 이어지면 실적 성장세 지속 가능, 단 단기 변동성은 큼.",
+  src:"비즈워치",url:"https://news.bizwatch.co.kr/article/market/2026/05/07/0003"},
+ {g:"buy",code:"000660",name:"SK하이닉스",sector:"반도체",light:"g",score:62,tone:"중립~낙관",conf:"상",ai:"4/4",
+  sum:"HBM 글로벌 1위로 AI 서버 수요를 가장 직접적으로 누리는 기업.",
+  pts:["2026년 1분기 영업이익 37.6조원 창사 최대","2026년 HBM 물량 사실상 선예약 완판"],
+  risk:"5월 한 달 19% 급등으로 과열·차익실현 압력.",
+  out:"HBM 수요는 견조하나 가격에 많이 반영돼 추격매수는 변동성 유의.",
+  src:"리포테라",url:"https://www.reportera.co.kr/economy/sk-hynix-peak-warning-signals-hbm-rsi-samsung-strike/"},
+ {g:"buy",code:"012450",name:"한화에어로스페이스",sector:"방산",light:"g",score:78,tone:"낙관",conf:"상",ai:"4/4",
+  sum:"K9 자주포·레드백 장갑차 수출로 K-방산을 이끄는 대표주.",
+  pts:["2026년 기대수주 약 23조원으로 대폭 증가","대형주 기준 PER 약 17배로 밸류 부담 완화"],
+  risk:"수출 계약 지연·환율 변동 시 실적 인식 시점 불확실.",
+  out:"수출 파이프라인 가시화로 성장 기대, 방산 강세 지속 전망.",
+  src:"KB증권",url:"https://kbthink.com/securities-view.html?docId=20260511153328080K"},
+ {g:"buy",code:"064350",name:"현대로템",sector:"방산·철도",light:"g",score:68,tone:"낙관~중립",conf:"중",ai:"3/4",
+  sum:"K2 전차 수출과 철도차량을 함께 가진 방산 성장주.",
+  pts:["대규모 수출 파이프라인(폴란드·중동 등)","철도+방산 두 축의 안정적 매출 기반"],
+  risk:"2026년 예상 PER 약 22배로 글로벌 방산 대비 높은 밸류.",
+  out:"수출 본격화 기대 크나 고밸류로 변동성 동반.",
+  src:"커머디티뉴스",url:"https://www.thecommoditiesnews.com/news/articleView.html?idxno=10471"},
+ {g:"buy",code:"329180",name:"HD현대중공업",sector:"조선",light:"g",score:68,tone:"낙관~중립",conf:"중",ai:"3/4",
+  sum:"LNG선 슈퍼사이클의 핵심 수혜를 받는 조선 빅3 대표주.",
+  pts:["2026년 수주목표 약 25.7조원(전년比 +29%)","중국 슬롯 제한으로 LNG선 물량 한국 집중 전망"],
+  risk:"글로벌 신조선 발주 둔화 가능성.",
+  out:"LNG선 수주가 받쳐주면 실적 개선 흐름 지속.",
+  src:"중앙이뉴스",url:"https://www.joongangenews.com/news/articleView.html?idxno=483524"},
+ {g:"buy",code:"042660",name:"한화오션",sector:"조선·방산",light:"g",score:68,tone:"낙관~중립",conf:"중",ai:"3/4",
+  sum:"상선과 함정(특수선)을 함께 가진 조선·방산 복합주.",
+  pts:["2026년 매출 13.8조·영업익 1.65조 전망","캐나다 잠수함·함정 등 특수선 수주 모멘텀"],
+  risk:"해양플랜트 수주 지연 시 실적 턴어라운드 지연.",
+  out:"특수선 증설과 함정 수주로 모멘텀 본격화 기대.",
+  src:"쉬핑뉴스넷",url:"https://www.shippingnewsnet.com/news/articleView.html?idxno=69948"},
+ {g:"buy",code:"034020",name:"두산에너빌리티",sector:"원전·발전",light:"g",score:68,tone:"낙관~중립",conf:"중",ai:"3/4",
+  sum:"대형원전·SMR·가스터빈을 모두 가진 에너지 종합주.",
+  pts:["2026년 수주 약 15.5조원 전망","체코 원전 EPC·SMR 등 다양한 성장 동력"],
+  risk:"해외 원전·SMR 프로젝트 일정 지연 리스크.",
+  out:"원전 르네상스 기대 속 수주 가시화 시 우상향.",
+  src:"네이트뉴스",url:"https://news.nate.com/view/20260527n05364"},
+ {g:"buy",code:"005380",name:"현대차",sector:"자동차",light:"g",score:60,tone:"중립~낙관",conf:"중",ai:"3/4",
+  sum:"실적 견조에 적극적 주주환원을 더한 저평가 대형주.",
+  pts:["2026년 PBR 0.93배·PER 10.8배로 저평가","3년간 4조원 자사주 매입·소각 발표"],
+  risk:"미국 관세 영향과 전기차 전환 비용 부담.",
+  out:"주주환원과 저평가 매력으로 밸류업 수혜 기대.",
+  src:"한국경제",url:"https://www.hankyung.com/article/2026050568141"},
+ {g:"buy",code:"105560",name:"KB금융",sector:"금융(은행지주)",light:"g",score:62,tone:"중립~낙관",conf:"상",ai:"4/4",
+  sum:"높은 배당과 자사주 소각으로 밸류업을 선도하는 1등 금융지주.",
+  pts:["2026년 총주주환원율 53% 전망","2.3조원 자사주 전량 소각 결의"],
+  risk:"금리 하락 시 순이자마진(NIM) 둔화 가능성.",
+  out:"밸류업·주주환원 강화로 안정적 우상향 기대.",
+  src:"네이트뉴스",url:"https://news.nate.com/view/20260512n06554"},
+ {g:"buy",code:"068270",name:"셀트리온",sector:"바이오",light:"g",score:60,tone:"중립~낙관",conf:"중",ai:"3/4",
+  sum:"바이오시밀러 수직계열화로 역대 최대 실적을 낸 바이오 대표주.",
+  pts:["2026년 1분기 매출 1.14조·영업익 3,219억 역대 최대","짐펜트라 미국 점유율 확대 가시화"],
+  risk:"연간 실적이 컨센서스를 소폭 밑돌 수 있다는 일부 전망.",
+  out:"신제품 매출 기여로 이익 성장 가속 기대.",
+  src:"이데일리",url:"https://pharm.edaily.co.kr/news/read?newsId=03742486645446296"},
+ // 비추천/주의 10
+ {g:"avoid",code:"042700",name:"한미반도체",sector:"반도체 장비",light:"y",score:50,tone:"중립",conf:"중",ai:"3/4",
+  sum:"HBM 본딩 장비 1위지만 단기 급등으로 가격 부담이 커진 종목.",
+  pts:["신고가 경신 후 단기 급등에 따른 밸류 부담","직전 분기 대비 매출·이익 조정"],
+  risk:"HBM4 발주 시점이 늦춰지면 실적 공백 가능성.",
+  out:"성장성은 크나 발주 타이밍에 따라 단기 변동성 클 전망.",
+  src:"솜삽",url:"https://somsap.somsap.com/2026/05/01/"},
+ {g:"avoid",code:"086520",name:"에코프로",sector:"2차전지 소재",light:"r",score:32,tone:"중립~비관",conf:"중",ai:"3/4",
+  sum:"배터리 업황 부진 속 외국인·기관 매도로 흔들리는 2차전지 대표주.",
+  pts:["하루 8% 급락 등 수급 악화","2차전지 셀 3사 모두 상반기 업황 부진"],
+  risk:"전기차 수요 둔화·미국 보조금 정책 불확실성.",
+  out:"업황 회복 신호 전까지 변동성 지속 가능성.",
+  src:"미민트",url:"https://msale.mimint.co.kr/bbs/view/news/S1N11/5389332"},
+ {g:"avoid",code:"373220",name:"LG에너지솔루션",sector:"2차전지 셀",light:"y",score:50,tone:"중립",conf:"중",ai:"3/4",
+  sum:"적자 전환에도 기대감에 급등해 실적과 주가 괴리가 커진 배터리 1위.",
+  pts:["2026년 1분기 영업손실 2,078억원 적자전환","하루 13% 급등 등 변동성 과대"],
+  risk:"ESS 전환 기대가 실적으로 이어지는 속도가 관건.",
+  out:"ESS 비중 확대 기대 크나 EV 부진 동반으로 실적 변동성.",
+  src:"니드인포",url:"https://needinfo.co.kr/lg-energysolution-26q1-analysis-target-price/"},
+ {g:"avoid",code:"006400",name:"삼성SDI",sector:"2차전지 셀",light:"r",score:32,tone:"중립~비관",conf:"중",ai:"3/4",
+  sum:"아직 적자가 이어지는데 주가는 실적 대비 높다는 평가를 받는 배터리주.",
+  pts:["2026년 1분기 영업손실 1,556억원, 적자 지속 전망","증권사 목표가 하향 흐름"],
+  risk:"유럽 점유율 하락·낮은 가동률로 흑자전환 지연.",
+  out:"하반기 흑자전환 목표이나 그 전까지 부진 가능성.",
+  src:"비즈니스포스트",url:"https://www.businesspost.co.kr/BP?command=article_view&num=437578"},
+ {g:"avoid",code:"035720",name:"카카오",sector:"인터넷 플랫폼",light:"r",score:32,tone:"중립~비관",conf:"중",ai:"3/4",
+  sum:"실적은 개선됐지만 AI 경쟁력·사법 리스크로 주가가 부진한 플랫폼주.",
+  pts:["AI 경쟁에서 뚜렷한 존재감 부족","노조 파업 찬반 가결 등 노사 리스크"],
+  risk:"창사 이후 첫 전면 파업 현실화 가능성.",
+  out:"성장 모멘텀·리스크 해소 전까지 주가 부진 가능성.",
+  src:"메트로서울",url:"https://www.metroseoul.co.kr/article/20260526500141"},
+ {g:"avoid",code:"035420",name:"NAVER",sector:"인터넷 플랫폼",light:"y",score:48,tone:"중립",conf:"중",ai:"3/4",
+  sum:"투자심리 위축으로 단기 약세를 보이는 국내 1위 포털주.",
+  pts:["반도체 쏠림 장세에서 상대적 소외","단기 투자심리 위축"],
+  risk:"AI 수익화 가시성 부족과 커머스 경쟁 심화.",
+  out:"순환매가 오면 반등 여지 있으나 단기 모멘텀은 약함.",
+  src:"미민트",url:"https://msale.mimint.co.kr/bbs/view/news/S1N11/5389506"},
+ {g:"avoid",code:"196170",name:"알테오젠",sector:"바이오",light:"y",score:48,tone:"중립",conf:"중",ai:"3/4",
+  sum:"코스닥 시총 상위(코스피 이전상장 추진)인 고밸류 바이오로 변동성이 큰 종목.",
+  pts:["시총 약 20조원대 고밸류·코스피 이전상장 추진 중","외국인·기관 차익실현 매도로 급등락 반복"],
+  risk:"기술수출 마일스톤 기대가 가격에 크게 선반영.",
+  out:"실적 성장세는 있으나 고밸류로 변동성 클 전망.",
+  src:"민심뉴스",url:"https://www.minsimnews.com/news/articleView.html?idxno=48742"},
+ {g:"avoid",code:"454910",name:"두산로보틱스",sector:"로봇",light:"r",score:30,tone:"중립~비관",conf:"중",ai:"3/4",
+  sum:"미래 성장 기대가 주가를 끌어 변동성이 매우 큰 로봇 테마주.",
+  pts:["실적보다 기대감이 주가를 주도하는 초기 국면","하루 만에 급등·급락 반복하는 높은 변동성"],
+  risk:"실적이 기대치를 못 따라갈 경우 가격 조정 위험.",
+  out:"테마 강세 시 급등 가능하나 추격매수는 위험.",
+  src:"알파스퀘어",url:"https://alphasquare.co.kr/home/theme-factor?theme-id=76"},
+ {g:"avoid",code:"277810",name:"레인보우로보틱스",sector:"로봇",light:"r",score:30,tone:"중립~비관",conf:"중",ai:"3/4",
+  sum:"삼성 협력 기대감으로 오른 휴머노이드 테마의 대표 변동성주.",
+  pts:["휴머노이드는 본격 실적 전 미래 기대 단계","로봇주 전반의 급등·조정 흐름에 연동"],
+  risk:"기대감 선반영 상태로 테마 약화 시 급락 위험.",
+  out:"휴머노이드 모멘텀 유효하나 실적 공백으로 변동성 큼.",
+  src:"CBCI",url:"https://www.cbci.co.kr/news/articleView.html?idxno=573855"},
+ {g:"avoid",code:"047810",name:"한국항공우주",sector:"방산·항공",light:"y",score:48,tone:"중립",conf:"중",ai:"3/4",
+  sum:"방산 강세로 올랐으나 동종업체 대비 밸류 부담이 지적되는 종목.",
+  pts:["PER 약 29배로 방산주 중 높은 편","단기 방산 랠리에 따른 차익실현 압력"],
+  risk:"내수 완제기 매출 인식 지연 시 실적 공백.",
+  out:"수출·내수 물량 인식 본격화 기대 있으나 밸류 부담 병존.",
+  src:"알파스퀘어",url:"https://alphasquare.co.kr/home/stock-summary?code=047810"}
+];
+
+// 전체 코스피(유가증권) 838종목 검색용 universe (이름↔코드, 한국거래소 상장법인목록 기반). 분석 20종목은 stocks에 상세 포함.
+const UNIV_KOSPI="279570:케이뱅크|217590:티엠씨|0126Z0:삼성에피스홀딩스|0120G0:삼양바이오팜|317450:명인제약|439260:대한조선|0030R0:대신밸류리츠|483650:달바글로벌|480370:씨케이솔루션|031210:서울보증보험|064400:LG씨엔에스|499790:GS피앤엘|484870:엠앤씨솔루션|415640:KB발해인프라|475560:더본코리아|489790:한화비전|079900:전진건설로봇|487570:HS효성|062040:산일전기|462870:시프트업|481850:신한글로벌액티브리츠|034230:파라다이스|443060:HD현대마린솔루션|475150:SK이터닉스|278470:에이피알|066970:엘앤에프|022100:포스코DX|017860:DS단석|111380:동인기연|450080:에코프로머티|454910:두산로보틱스|465770:STX그린로지스|092790:넥스틸|030190:NICE평가정보|462520:조선내화|090460:비에이치|460850:동국씨엠|460860:동국제강|457190:이수스페셜티케미컬|456040:OCI|100090:SK오션플랜트|448730:삼성FN리츠|453340:현대그린푸드|452260:한화갤러리아|451800:한화리츠|377740:바이오노트|446070:유니드비티플러스|108320:LX세미콘|432320:KB스타리츠|403550:쏘카|126720:수산인더스트리|357430:마스턴프리미어리츠|417310:코람코더원리츠|373220:LG에너지솔루션|404990:신한서부티엔디리츠|396690:미래에셋글로벌리츠|402340:SK스퀘어|400760:NH올원리츠|377300:카카오페이|381970:케이카|329180:HD현대중공업|395400:SK리츠|271940:일진하이솔루스|377190:디앤디플랫폼리츠|139990:아주스틸|089860:롯데렌탈|372910:한컴라이프케어|259960:크래프톤|178920:PI첨단소재|323410:카카오뱅크|137310:에스디바이오센서|097520:엠씨넥스|383800:LX홀딩스|383220:F&F|361610:SK아이이테크놀로지|302440:SK바이오사이언스|378850:화승알앤에이|950210:프레스티지바이오파마|248070:솔루엠|375500:DL이앤씨|365550:ESR켄달스퀘어리츠|009900:명신산업|244920:에이플러스에셋|339770:교촌에프앤비|352820:하이브|363280:티와이홀딩스|357120:코람코라이프인프라리츠|348950:제이알글로벌리츠|357250:미래에셋맵스리츠|350520:이지스레지던스리츠|334890:이지스밸류플러스리츠|326030:에스케이바이오팜|353200:대덕전자|344820:케이씨씨글라스|338100:NH프라임리츠|308170:씨티알모빌리티|322000:HD현대에너지솔루션|272210:한화시스템|317400:자이에스앤디|330590:롯데리츠|013890:지누스|336260:두산퓨얼셀|336370:솔루스첨단소재|036420:콘텐트리중앙|003670:포스코퓨처엠|307950:현대오토에버|192650:드림텍|192080:더블유게임즈|316140:우리금융지주|298690:에어부산|267850:아시아나IDT|306200:세아제강|293480:하나제약|010400:우진아이엔에스|293940:신한알파리츠|300720:한일시멘트|091810:트리니티항공|286940:롯데이노베이트|298050:HS효성첨단소재|298040:효성중공업|298020:효성티앤씨|298000:효성화학|088260:이리츠코크렙|294870:IPARK현대산업개발|018250:애경산업|068270:셀트리온|284740:쿠쿠홈시스|285130:SK케미칼|282330:BGF리테일|092780:DYP|272450:진에어|281820:케이씨텍|272550:삼양패키징|055490:테이팩스|280360:롯데웰푸드|271980:제일약품|035720:카카오|271560:오리온|268280:미원에스씨|267290:경동도시가스|251270:넷마블|267270:HD건설기계|267250:HD현대|267260:HD현대일렉트릭|264900:크라운제과|145720:덴티움|111110:호전실업|143210:핸즈코퍼레이션|241560:두산밥캣|207940:삼성바이오로직스|234080:JW생명과학|241590:화승엔터프라이즈|204210:JK리버스톤리츠|229640:LS에코에너지|249420:일동제약|248170:샘표식품|016740:두올|026960:동서|123890:한국자산신탁|034830:한국토지신탁|195870:해성디에스|070960:모나용평|101530:해태제과식품|004440:삼일씨엔에스|194370:제이에스코퍼레이션|226320:잇츠한불|075580:세진중공업|214330:금호에이치티|089590:제주항공|227840:현대코퍼레이션홀딩스|079550:LIG디펜스앤에어로스페이스|039570:HDC랩스|002690:동일제강|095570:AJ네트웍스|214320:이노션|214420:토니모리|085620:미래에셋생명|214390:경보제약|210980:SK디앤디|145210:다이나믹디자인|213500:한솔제지|210540:디와이파워|028260:삼성물산|112610:씨에스윈드|018260:삼성에스디에스|204320:HL만도|200880:서연이화|192400:쿠쿠홀딩스|133820:화인베스틸|027410:BGF|192820:코스맥스|185750:종근당|006880:신송홀딩스|183190:아세아시멘트|064350:현대로템|180640:한진칼|181710:NHN|175330:JB금융지주|155660:DSR|170900:동아에스티|013870:지엠비코리아|037560:LG헬로비전|163560:동일고무벨트|161890:한국콜마|161390:한국타이어앤테크놀로지|161000:애경케미칼|014710:사조씨푸드|079980:휴비스|145270:케이탑리츠|007070:GS리테일|129260:인터지스|145990:삼양사|039130:하나투어|078520:에이블씨엔씨|023000:삼원강재|031430:신세계인터내셔날|140910:에이리츠|047810:한국항공우주|071840:롯데하이마트|069640:한세엠케이|139480:이마트|139130:iM금융지주|053210:케이티스카이라이프|138040:메리츠금융지주|023350:한국종합기술|138930:BNK금융지주|020150:롯데에너지머티리얼즈|011210:현대위아|136490:선진|134380:미원화학|134790:시디즈|082740:한화엔진|117580:대성에너지|126560:현대퓨처넷|058860:KTis|130660:한전산업|900140:엘브이엠씨|081660:미스토홀딩스|058850:KTcs|057050:현대홈쇼핑|002150:도화엔지니어링|128820:대성산업|122900:아이마켓코리아|128940:한미약품|105840:우진|033920:무학|102460:이연제약|123690:한국화장품|123700:에스제이엠|060980:HL홀딩스|032830:삼성생명|031440:신세계푸드|088350:한화생명|120030:조선선재|120110:코오롱인더|119650:KC코트렐|071320:지역난방공사|012160:영흥|118000:메타케어|052690:한전기술|114090:GKL|034730:SK|032560:황금에스티|000080:하이트진로|082640:동양생명|047400:유니온머티리얼|093240:형지엘리트|039490:키움증권|111770:영원무역|053690:한미글로벌|028100:동아지질|071970:HD현대마린엔진|108670:LX하우시스|105630:한세실업|109070:주성코퍼레이션|107590:미원홀딩스|035420:NAVER|026940:부국철강|105560:KB금융|104700:한국철강|103590:일진전기|103140:풍산|011070:LG이노텍|017180:명문제약|100220:비상교육|102260:동성케미컬|032640:LG유플러스|101140:인바이오젠|020560:아시아나항공|100840:SNT에너지|100250:진양홀딩스|085310:엔케이|051600:한전KPS|092440:기신정기|044450:KSS해운|094280:효성 ITX|033270:유나이티드|092200:디아이씨|097950:CJ제일제당|028670:팬오션|097230:HJ중공업|096760:JW홀딩스|096770:SK이노베이션|029780:삼성카드|001780:알루코|095720:웅진씽크빅|094800:맵스리얼티|090370:메타랩스|093370:후성|093050:LF|044380:주연테크|044820:코스맥스비티아이|034590:인천도시가스|009770:삼정펄프|092220:KEC|092230:KPX홀딩스|089470:HDC현대EP|090350:노루페인트|090430:아모레퍼시픽|032350:롯데관광개발|090080:평화산업|049800:우진플라임|035510:신세계I&C|088790:진도|088980:맥쿼리인프라|023530:롯데쇼핑|086280:현대글로비스|084870:티비에이치글로벌|086790:하나금융지주|001560:제일연마|079430:현대리바트|084010:대한제강|075180:새론오토모티브|083420:그린케미칼|084690:대상홀딩스|071950:코아스|084680:이월드|084670:동양고속|042700:한미반도체|004890:동일산업|010960:삼호개발|073240:금호타이어|079160:CJ CGV|081000:일진다이아|014830:유니드|041650:상신브레이크|023810:인팩|078930:GS|077500:유니퀘스트|058730:다스코|034220:LG디스플레이|078000:텔코웨어|077970:STX엔진|034310:NICE|019680:대교|024110:기업은행|074610:이엔플러스|025750:한솔홈데코|007660:이수페타시스|035250:강원랜드|037270:YG PLUS|072710:농심홀딩스|071050:한국금융지주|072130:유엔젤|034120:SBS|036570:NC|071090:하이스틸|069730:DSR제강|006890:태경케미컬|011500:한농화성|069960:현대백화점|069460:대호에이엘|069620:대웅제약|027740:마니커|036530:SNT홀딩스|069260:티케이지휴켐스|033530:SJG세종|058430:포스코스틸리온|068290:삼성출판사|067830:세이브존I&C|030610:교보증권|009240:한샘|017370:우신시스템|066570:LG전자|024720:콜마홀딩스|064960:SNT모티브|037710:광주신세계|020760:일진디스플|063160:종근당바이오|055550:신한지주|021240:코웨이|058650:세아홀딩스|051900:LG생활건강|051910:LG화학|047040:대우건설|047050:포스코인터내셔널|042660:한화오션|051630:진양화학|034020:두산에너빌리티|010040:한국내화|016450:한세예스24홀딩스|016710:대성홀딩스|003220:대원제약|036460:한국가스공사|007120:미래아이앤지|000850:화천기공|036580:팜스코|033780:케이티앤지|009540:HD한국조선해양|024090:디씨엠|006840:AK홀딩스|035000:HS애드|006650:대한유화|035150:백산|033250:체시스|033240:자화전자|030200:케이티|019490:엑시큐어하이트론|030000:제일기획|026890:스틱인베스트먼트|029460:케이씨|024890:대원화성|017940:E1|018670:SK가스|023590:다우기술|014440:영보화학|011790:SKC|025890:한국주강|024900:디와이덕양|023960:에쓰씨엔지니어링|023800:인지컨트롤스|012320:경동인베스트|031820:아이티센씨티에스|025530:에스제이엠홀딩스|000660:SK하이닉스|015360:INVENI|023150:MH에탄올|023450:동남합성|028050:삼성E&A|029530:신도리코|005320:온타이드|016800:퍼시스|024070:WISCOM|030720:동원수산|025560:미래산업|030210:다올투자증권|012630:HDC|017900:광전자|025540:한국단자공업|003160:디아이|011930:신성이엔지|019180:티에이치엔|018880:한온시스템|006740:블루산업개발|021820:세원정공|000910:유니온|020120:키다리스튜디오|027970:한국제지|020000:한섬|017800:현대엘리베이터|016580:환인제약|013580:계룡건설산업|021050:서원|012750:에스원|015890:태경산업|016590:신대양제지|011690:와이투솔루션|025860:남해화학|018500:동원금속|011300:우성머티리얼스|011200:HMM|012610:경인양행|017810:풀무원|017390:서울도시가스|025820:이구산업|011090:에넥스|007460:에이프로젠|025620:차AI헬스케어|017960:한국카본|025000:KPX케미칼|007980:TP|010580:에스엠벡셀|009440:KC그린홀딩스|008420:문배철강|016880:웅진|014790:HL D&I|007310:오뚜기|008500:일정실업|010120:엘에스일렉트릭|009190:대양금속|000760:이화산업|014820:동원시스템즈|010140:삼성중공업|009680:모토닉|010690:화신|000390:SP삼화|009450:경동나비엔|012030:DB|005090:SGC에너지|005750:대림바스|005880:대한해운|005870:휴니드테크놀러지스|017550:수산세보틱스|011170:롯데케미칼|001430:세아베스틸지주|008770:호텔신라|014580:태경비케이|013520:화승코퍼레이션|004080:신흥|006060:화승인더스트리|014530:극동유화|002140:고려산업|016090:대현|001620:케이비아이동국실업|017040:광명전기|011390:부산산업|011810:STX|010130:고려아연|004720:팜젠사이언스|009200:무림페이퍼|001500:현대차증권|008870:금비|005820:원림|008490:서흥|014910:성문전자|003580:HLB글로벌|015860:일진홀딩스|014160:대영포장|012280:영화금속|019170:신풍제약|002210:동성제약|012170:아센디오|009420:한올바이오파마|011330:유니켐|012800:대창|013360:일성건설|013700:까뮤이앤씨|002760:보락|007610:선도전기|004920:씨아이테크|009290:광동제약|011420:갤럭시아에스엠|004270:남성|001940:KISCO홀딩스|009410:태영건설|007280:한국특강|009180:한솔로지스틱스|002170:SYTS|017670:SK텔레콤|010640:진양폴리우레탄|003650:미창석유공업|004380:삼익THK|002840:미원상사|007860:서연|013000:세우글로벌|012330:현대모비스|001390:KG케미칼|009320:아진전자부품|001450:현대해상|005440:현대지에프홀딩스|015760:한국전력공사|007690:국도화학|006280:녹십자|009160:SIMPAC|008600:윌비스|015230:대창단조|007160:사조산업|014130:한익스프레스|008040:사조동아원|009140:경인전자|009580:무림P&P|014990:인디에프|013570:디와이|003610:방림|015590:DKME|014680:한솔케미칼|010820:퍼스텍|006040:동원산업|008060:대덕|003680:한성기업|015020:이스타코|011280:태림포장|002310:아세아제지|010660:화천기계|011150:CJ씨푸드|001770:SHD|018470:조일알미늄|005850:에스엘|009970:영원무역홀딩스|012510:더존비즈온|003850:보령|008250:이건산업|012690:모나리자|006370:대구백화점|006980:우성|002920:유성기업|002220:한일철강|002450:삼익악기|002460:HS화성|007340:DN오토모티브|000890:보해양조|001290:상상인증권|003010:혜인|014280:금강공업|009810:플레이그램|008730:율촌화학|009270:신원|004140:동방|002960:한국쉘석유|003000:부광약품|005810:풍산홀딩스|001270:부국증권|012200:계양전기|004710:한솔테크닉스|016610:DB증권|008930:한미사이언스|005500:삼진제약|005490:POSCO홀딩스|002410:범양건영|005690:파미셀|001230:동국홀딩스|006340:대원전선|005950:이수화학|016360:삼성증권|002810:삼영무역|001750:한양증권|011780:금호석유화학|003470:유안타증권|002620:제일파마홀딩스|015260:에이엔피|009460:한창제지|005720:넥센|006660:삼성공조|004490:세방전지|011000:진원생명과학|009310:참엔지니어링|010100:한국무브넥스|005070:코스모신소재|004830:덕성|001720:신영증권|001200:유진증권|003460:유화증권|011700:한신기계공업|005420:코스모화학|000500:가온전선|010950:S-Oil|012450:한화에어로스페이스|011230:삼화전자공업|004020:현대제철|004770:써니전자|004560:현대비앤지스틸|006090:사조오양|003530:한화투자증권|009470:삼화전기|001510:SK증권|010770:평화홀딩스|007110:일신석재|016380:KG스틸|010780:아이에스동서|002360:SH에너지화학|003830:대한화섬|007810:코리아써키트|004170:신세계|010060:OCI홀딩스|000520:삼일제약|006490:인스코비|003120:일성아이에스|000720:현대건설|002710:TCC스틸|003060:에이프로젠바이오로직스|007700:F&F 홀딩스|008700:아남전자|006360:GS건설|006110:삼아알미늄|006200:한국전자홀딩스|006400:삼성SDI|009150:삼성전기|005960:동부건설|009070:케이씨티시|003070:코오롱글로벌|005180:빙그레|005250:녹십자홀딩스|000480:시알홀딩스|004310:현대약품|003920:남양유업|008350:남선알미늄|003350:한국화장품제조|011760:현대코퍼레이션|006260:LS|001740:SK네트웍스|002100:경농|004870:티웨이홀딩스|007590:동방아그로|004430:송원산업|002780:진흥기업|004090:한국석유공업|000650:천일고속|000430:대원강업|001080:만호제강|004700:조광피혁|004360:세방|008970:KBI동양철관|002880:디와이에이|001260:남광토건|005680:삼영전자공업|005800:신영와코루|002630:오리엔트바이오|001550:조비|005430:한국공항|004910:조광페인트|003080:SB성보|004690:삼천리|002600:조흥|001570:금양|003960:사조대림|002070:비비안|003570:SNT다이내믹스|004960:한신공영|004370:농심|003720:삼영|004980:성신양회|004970:신라교역|002870:신풍|001630:종근당홀딩스|005740:크라운해태홀딩스|002390:한독|001380:SG글로벌|006120:SK디스커버리|007540:샘표|003280:흥아해운|001250:GS글로벌|002990:금호건설|001470:삼부토건|001820:삼화콘덴서공업|001020:페이퍼코리아|001520:동양|000880:한화|001060:JW중외제약|000670:영풍|001340:PKC|000180:성창기업지주|005110:한창|004450:삼화왕관|000040:KR모터스|002240:고려제강|004100:태양금속공업|002820:SUN&L|004840:DRB동일|002350:넥센타이어|004060:SG세계물산|004000:롯데정밀화학|000020:동화약품|000210:DL|001120:LX인터내셔널|002720:국제약품|003240:태광산업|005030:부산주공|000590:CS홀딩스|000990:DB하이텍|006570:대림통상|000220:유유제약|000860:강남제비스코|003540:대신증권|005940:NH투자증권|006800:미래에셋증권|002700:신일전자|001360:삼성제약|000810:삼성화재해상보험|003230:삼양식품|000370:한화손해보험|008260:NI스틸|000230:일동홀딩스|000490:대동|001800:오리온홀딩스|004540:깨끗한나라|001420:태원물산|002020:코오롱|005930:삼성전자|000300:DH오토넥스|001460:BYC|003620:KG모빌리티|005610:삼립|000540:흥국화재|007570:일양약품|002320:한진|002200:한국수출포장공업|005380:현대자동차|005360:모나미|009830:한화솔루션|002030:아세아|006380:카프로|004990:롯데지주|001070:대한방직|004410:서울식품공업|000680:LS네트웍스|001210:금호전기|000140:하이트진로홀딩스|000320:노루홀딩스|000270:기아|004800:효성|001040:CJ|000150:두산|005010:휴스틸|005830:DB손해보험|002900:TYM|003090:대웅|003780:진양산업|003520:영진약품|002380:케이씨씨|005300:롯데칠성음료|003200:일신방직|002790:아모레퍼시픽홀딩스|006220:제주은행|004150:한솔홀딩스|007210:벽산|000400:롯데손해보험|001130:대한제분|001680:대상|003550:LG|000640:동아쏘시오홀딩스|003690:코리안리|000970:한국주철관공업|003300:한일홀딩스|004250:엔피씨|003030:세아제강지주|001440:대한전선|001790:대한제당|000070:삼양홀딩스|002420:세기상사|000240:한국앤컴퍼니|000950:전방|003490:대한항공|001530:디아이동일|000100:유한양행|000120:CJ대한통운|000050:경방|000700:유수홀딩스|003480:한진중공업홀딩스";
+const universe=UNIV_KOSPI.split("|").map(function(e){var i=e.indexOf(":");return {code:e.slice(0,i),name:e.slice(i+1),sector:"코스피"};});
+
+let aiRows=[
+ {ai:"Perplexity Pro",role:"실시간 수집·출처",concl:"지수 신고가·반도체 수출 급증·외국인 순매도를 출처와 함께 수집",v:"v-con",vt:"팩트"},
+ {ai:"Claude Max",role:"심층 추론(강세)",concl:"실적 장세 견조, 방산·조선·원전 순환매 확산 → 신중한 강세",v:"v-con",vt:"강세"},
+ {ai:"Gemini Pro",role:"종합(약세)",concl:"8일 만에 20% 급등·반도체 49% 쏠림 → 변동성·조정 경계",v:"v-dif",vt:"경계"},
+ {ai:"ChatGPT Pro",role:"교차검증",concl:"수치 대체로 일치, 단 하반기 1만 목표는 가정 의존적 → 확신도 하향",v:"v-solo",vt:"검증"}
+];
+let consensusTxt="<b>합의:</b> 4개 AI 모두 '추세는 상승, 그러나 변동성·반도체 쏠림 리스크 병존'에 수렴. <b>이견:</b> 상승 폭과 조정 강도. → 한 방향 베팅보다 분할·분산 대응 시사.";
+
+const profiles={
+ stable:{name:"안정형",eq:30,bd:45,csh:25,rows:[["주식","20~40%"],["채권","40~50%"],["현금","15~30%"],["기간","5년+ 장기"],["방식","분할(적립식)"],["한 종목 최대","5% 내외"]]},
+ neutral:{name:"중립형",eq:55,bd:30,csh:15,rows:[["주식","50~60%"],["채권","25~35%"],["현금","10~20%"],["기간","3~7년"],["방식","분할 중심"],["한 종목 최대","5~10%"]]},
+ growth:{name:"성장형",eq:80,bd:10,csh:10,rows:[["주식","70~90%"],["채권","5~15%"],["현금","5~15%"],["기간","7년+ 장기"],["방식","분할 강력 권장"],["한 종목 최대","10~15%"]]},
+ trade:{name:"단기 트레이딩",eq:100,bd:0,csh:0,rows:[["트레이딩 자금","총자산 5~15%"],["1회 리스크","계좌 1~2%"],["기간","수일~수주"],["손절","-5~8% 기계적"],["익절","손익비 2:1+"],["동시 종목","2~3개 이내"]]}
+};
+let monitor=[
+ {k:"코스피 지수",v:"8,200선"},{k:"반도체 시총 비중",v:"≈49%"},
+ {k:"외국인 수급",v:"순매도 지속"},{k:"원/달러",v:"1,494~1,507"},
+ {k:"반도체 수출",v:"4월 +173.5%"},{k:"코스피 PBR",v:"≈2.1배"}
+];
+
+/* ===== RENDER ===== */
+const $=id=>document.getElementById(id);
+const esc=s=>(""+s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const liteTxt={g:"🟢 관심",y:"🟡 중립·관망",r:"🔴 주의"};
+const confCls={"상":"conf-h","중":"conf-m","하":"conf-l"};
+
+/* ===== 라이브 시세 (Google Sheet + GOOGLEFINANCE, 약 20분 지연) ===== */
+const SHEET_ID="1pLFiMYoEJ9VHzYfucEVrfWcLKyj91DKi-My5rlaLAbc";
+const MACRO_SHEET_ID="1eeEwRXUiExYa-wt6IFq3dyvcvqHhvJxls84dLp-XuIw";
+const DRIVE_READ="mcp__260dbc13-34e5-453f-8329-444f4f5b3f81__read_file_content";
+const DRIVE_CREATE="mcp__260dbc13-34e5-453f-8329-444f4f5b3f81__create_file";
+const FMP_SEARCH="mcp__edb7d265-7c9b-4247-8e80-e5dce3b18102__search";
+// Cowork 앱 내부 여부 자동 감지 (외부 독립 웹에서는 false → 공개 시트 CSV/정적 모드)
+function inCowork(){ return !!(window.cowork && window.cowork.callMcpTool); }
+function aiOn(){ return !!(window.cowork && window.cowork.askClaude); }
+// ▼ 외부(지인 비공개) 백엔드 주소. 백엔드 배포 후 그 URL로 채우세요. 비우면 정적/지연 모드.
+const BACKEND_URL = "";
+// ▼ 매일 자동 갱신되는 분석 콘텐츠(data.json) 주소. 비우면 아래 내장 기본값 사용.
+//   예: GitHub Pages의 raw URL 또는 Cloudflare Pages의 /data.json
+let CONTENT_URL = "content.json";
+let ACCESS_TOKEN = null;
+function backendOn(){ return !inCowork() && !!BACKEND_URL; }
+function burl(p){ return BACKEND_URL.replace(/\/$/,"") + p; }
+async function ensureToken(){ if(backendOn() && !ACCESS_TOKEN){ ACCESS_TOKEN = (window.prompt("접속 암호를 입력하세요") || "").trim(); } }
+async function apiQuotes(codes){
+  await ensureToken();
+  const res = await fetch(burl("/quotes?codes="+codes.join(",")), { headers: { "X-Access-Token": ACCESS_TOKEN || "" } });
+  if(res.status===401){ ACCESS_TOKEN=null; throw new Error("암호 오류"); }
+  if(!res.ok) throw new Error("quotes "+res.status);
+  const j = await res.json(); const m={};
+  Object.keys(j).forEach(k=>{ const v=j[k]; if(v && v.price!=null){ m[pad6(k)]={price:Number(v.price), rate:Number(v.rate||0)}; } });
+  return m;
+}
+async function apiAI(ctx, prompt){
+  await ensureToken();
+  const res = await fetch(burl("/ai"), { method:"POST", headers:{ "Content-Type":"application/json", "X-Access-Token":ACCESS_TOKEN||"" }, body: JSON.stringify({ ctx:ctx, prompt:prompt }) });
+  if(res.status===401){ ACCESS_TOKEN=null; throw new Error("암호 오류"); }
+  if(!res.ok) throw new Error("ai "+res.status);
+  const j = await res.json(); return j.text || "(응답 없음)";
+}
+let liveMap={}, curStock=null, chartCache={}, quoteSheet={}, chartSheet={}, looking=false;
+const pad6=c=>String(c).replace(/[^0-9]/g,"").padStart(6,"0");
+function parseSheet(txt){
+  const map={};
+  (txt||"").split("\n").forEach(line=>{
+    const cells=line.split("|").map(x=>x.trim()).filter(x=>x!=="");
+    if(cells.length<3 || !/^[0-9]+$/.test(cells[0])) return;
+    const code=pad6(cells[0]);
+    const nums=[];
+    for(let i=1;i<cells.length;i++){
+      const raw=cells[i].replace(/\\/g,"").replace(/,/g,"");
+      if(/^-?[0-9]+(\.[0-9]+)?$/.test(raw)) nums.push(parseFloat(raw));
+    }
+    if(nums.length>=1 && !isNaN(nums[0])) map[code]={price:nums[0], rate:(nums.length>=2&&!isNaN(nums[1]))?nums[1]:0};
+  });
+  return map;
+}
+function parseCSV(txt){
+  const map={};
+  (txt||"").split(/\r?\n/).forEach(line=>{
+    const cells=[]; let cur="", q=false;
+    for(let i=0;i<line.length;i++){const ch=line[i]; if(ch==='"'){q=!q;} else if(ch===',' && !q){cells.push(cur);cur="";} else cur+=ch;}
+    cells.push(cur);
+    const c=cells.map(x=>x.trim());
+    const cr=(c[0]||"");
+    if(c.length>=3 && /^[0-9]+(\.0+)?$/.test(cr)){
+      const code=pad6(cr.split(".")[0]);
+      const price=parseFloat((c[2]||"").replace(/[^0-9.\-]/g,""));
+      const rate=parseFloat((c[3]||"").replace(/[^0-9.\-]/g,""));
+      if(!isNaN(price)) map[code]={price:price, rate:isNaN(rate)?0:rate};
+    }
+  });
+  return map;
+}
+function liveStr(code){
+  const v=liveMap[pad6(code)];
+  if(!v) return "";
+  const cls=v.rate>0?"up":(v.rate<0?"down":"flat"), ar=v.rate>0?"▲":(v.rate<0?"▼":"-");
+  return `<span class="livep ${cls}">${v.price.toLocaleString()}원 ${ar}${v.rate.toFixed(2)}%</span>`;
+}
+function liveDetail(code){
+  const v=liveMap[pad6(code)];
+  if(!v) return `<div class="livebox none">💹 라이브 시세: 미연결 또는 미커버 — 코스닥 일부 종목은 구글파이낸스가 지원하지 않아, 추후 KIS 연동 시 표시됩니다.</div>`;
+  const cls=v.rate>0?"up":(v.rate<0?"down":"flat"), ar=v.rate>0?"▲":(v.rate<0?"▼":"-");
+  return `<div class="livebox"><span class="lk">💹 라이브 (약 20분 지연)</span> <b class="${cls}" style="font-size:18px">${v.price.toLocaleString()}원</b> <span class="${cls}" style="font-weight:700">${ar}${v.rate.toFixed(2)}%</span></div>`;
+}
+function rerenderContent(){
+  $("brief").innerHTML=brief.map(b=>`<li><span class="tag ${b.c}">${b.t}</span>${esc(b.x)}</li>`).join("");
+  $("scenarios").innerHTML=scenarios.map(s=>`<div class="row"><div class="h">${s.pl}<span class="p ${s.p}">${s.h}</span></div><div class="d">${esc(s.d)}</div></div>`).join("");
+  $("aibody").innerHTML=aiRows.map(r=>`<tr><td><b>${r.ai}</b><span class="role">${r.role}</span></td><td>${esc(r.concl)}</td><td><span class="verdict ${r.v}">${r.vt}</span></td></tr>`).join("");
+  $("consensus").innerHTML=consensusTxt;
+  $("monitor").innerHTML=monitor.map(m=>`<div class="m"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join("");
+  $("stocklist").innerHTML=universe.map(s=>`<option value="${s.name}">${s.code} · ${s.sector}</option>`).join("");
+  renderLists();
+  if(curStock){ const fresh=stocks.find(x=>x.code===curStock.code); renderDetail(fresh||curStock); }
+}
+async function loadContent(){
+  if(!CONTENT_URL) return;
+  try{
+    const r=await fetch(CONTENT_URL,{cache:"no-store"}); if(!r.ok) return;
+    const c=await r.json();
+    if(Array.isArray(c.brief)) brief=c.brief;
+    if(Array.isArray(c.scenarios)) scenarios=c.scenarios;
+    if(Array.isArray(c.stocks)) stocks=c.stocks;
+    if(Array.isArray(c.aiRows)) aiRows=c.aiRows;
+    if(typeof c.consensusTxt==="string") consensusTxt=c.consensusTxt;
+    if(Array.isArray(c.monitor)) monitor=c.monitor;
+    rerenderContent();
+    const u=$("asof"); if(u && c.updated) u.textContent="분석 콘텐츠 자동 갱신: "+c.updated+" · 시세는 약 20분 지연.";
+  }catch(e){}
+}
+async function loadMacro(){
+  try{
+    let txt="";
+    if(inCowork()){
+      let r=await window.cowork.callMcpTool(DRIVE_READ,{fileId:MACRO_SHEET_ID});
+      let raw=r; if(raw&&raw.content&&raw.content[0]&&raw.content[0].text!==undefined) raw=raw.content[0].text;
+      if(raw&&typeof raw==="object"&&raw.fileContent) txt=raw.fileContent;
+      else if(typeof raw==="string"){try{const o=JSON.parse(raw);txt=(o&&o.fileContent)?o.fileContent:raw;}catch(e){txt=raw;}}
+      else txt=String(raw||"");
+      txt=txt.replace(/\\n/g,"\n");
+    } else {
+      const res=await fetch("https://docs.google.com/spreadsheets/d/"+MACRO_SHEET_ID+"/gviz/tq?tqx=out:csv"); txt=await res.text();
+    }
+    const m={};
+    txt.split(/\r?\n/).forEach(line=>{
+      let cells = line.indexOf("|")>=0 ? line.split("|").map(x=>x.trim()).filter(x=>x!=="") : line.split(",").map(x=>x.replace(/^"|"$/g,"").trim());
+      if(cells.length>=2 && /^[A-Z]+$/.test(cells[0])){
+        m[cells[0]]={price:parseFloat((cells[1]||"").replace(/[^0-9.\-]/g,"")), rate:parseFloat((cells[2]||"").replace(/[^0-9.\-]/g,""))};
+      }
+    });
+    if(m.KOSPI && !isNaN(m.KOSPI.price)){
+      const e=$("tv_KOSPI"); if(e) e.textContent=Math.round(m.KOSPI.price).toLocaleString();
+      const c=$("tc_KOSPI"); if(c && !isNaN(m.KOSPI.rate)){ const up=m.KOSPI.rate>=0; c.textContent=(up?"▲":"▼")+Math.abs(m.KOSPI.rate).toFixed(2)+"% · 실시간"; c.className="c "+(up?"up":"down"); }
+    }
+    if(m.USDKRW && !isNaN(m.USDKRW.price)){
+      const e=$("tv_USDKRW"); if(e) e.textContent=Math.round(m.USDKRW.price).toLocaleString();
+      const c=$("tc_USDKRW"); if(c){ c.textContent="실시간(약 20분 지연)"; c.className="c"; }
+    }
+  }catch(e){}
+}
+function renderLists(){
+  $("buylist").innerHTML=stocks.filter(s=>s.g==="buy").map(rrow).join("");
+  $("avoidlist").innerHTML=stocks.filter(s=>s.g==="avoid").map(rrow).join("");
+  document.querySelectorAll(".rrow").forEach(r=>r.addEventListener("click",()=>{
+    const s=stocks.find(x=>x.code===r.getAttribute("data-code"));renderDetail(s);
+  }));
+}
+async function loadLive(){
+  const st=$("livestatus");
+  if(st){st.className="livebar";st.textContent="💹 라이브 시세를 불러오는 중…";}
+  try{
+    if(inCowork()){
+      let r=await window.cowork.callMcpTool(DRIVE_READ,{fileId:SHEET_ID});
+      let raw=r;
+      if(raw&&raw.content&&raw.content[0]&&raw.content[0].text!==undefined) raw=raw.content[0].text;
+      let txt="";
+      if(raw&&typeof raw==="object"&&raw.fileContent) txt=raw.fileContent;
+      else if(typeof raw==="string"){ try{const o=JSON.parse(raw); txt=(o&&o.fileContent)?o.fileContent:raw;}catch(e){txt=raw;} }
+      else txt=String(raw||"");
+      txt=txt.replace(/\\n/g,"\n");
+      Object.assign(liveMap, parseSheet(txt));
+    } else if(backendOn()){
+      Object.assign(liveMap, await apiQuotes(stocks.map(s=>s.code)));
+    } else {
+      const url="https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/gviz/tq?tqx=out:csv";
+      const res=await fetch(url); const csv=await res.text();
+      Object.assign(liveMap, parseCSV(csv));
+    }
+    const n=Object.keys(liveMap).length;
+    if(st){
+      if(n){st.className="livebar";st.innerHTML=`💹 라이브 시세 연결됨 · ${n}종목 (구글시트·약 20분 지연) · <a href="#" id="liverefresh">새로고침</a>`;}
+      else{st.className="livebar off";st.innerHTML=(inCowork()?'시세를 읽지 못했습니다(형식 오류). ':'시세를 읽지 못했습니다 — 구글시트를 "링크 있는 모든 사용자 보기"로 공개했는지 확인하세요. ')+'<a href="#" id="liverefresh">다시 시도</a>';}
+    }
+    renderLists();
+    if(curStock) renderDetail(curStock);
+  }catch(e){
+    const msg = inCowork() ? 'Google Drive 커넥터 권한을 허용해 주세요. ' : (backendOn() ? '백엔드 연결/접속암호를 확인하세요. ' : '시트 공개 설정 또는 네트워크를 확인하세요. ');
+    if(st){st.className="livebar off";st.innerHTML='시세 연결 실패 — '+msg+'<a href="#" id="liverefresh">다시 시도</a>';}
+  }
+  const lr=$("liverefresh"); if(lr) lr.addEventListener("click",ev=>{ev.preventDefault();loadLive();});
+}
+
+$("ticks").innerHTML=ticks.map(t=>`<div class="tick"><div class="k">${t.k}</div><div class="v"${t.key?` id="tv_${t.key}"`:""}>${t.v}</div><div class="c ${t.dir}"${t.key?` id="tc_${t.key}"`:""}>${t.c}</div></div>`).join("");
+(function(){const mb=$("modebadge"); if(mb) mb.textContent = inCowork()?"앱: 풀기능":(BACKEND_URL?"외부: 백엔드 연결":"외부: 보기모드(지연·AI/차트 제한)");})();
+loadMacro();
+$("asof").textContent="시세: Google Finance 연동(약 20분 지연) · 코스피 전체 838종목 이름검색 지원. 코스닥·코넥스 실시간과 체결가 실시간은 추후 KIS 연동에서 제공. 분석 기준 2026-05-30.";
+$("brief").innerHTML=brief.map(b=>`<li><span class="tag ${b.c}">${b.t}</span>${esc(b.x)}</li>`).join("");
+$("scenarios").innerHTML=scenarios.map(s=>`<div class="row"><div class="h">${s.pl}<span class="p ${s.p}">${s.h}</span></div><div class="d">${esc(s.d)}</div></div>`).join("");
+$("aibody").innerHTML=aiRows.map(r=>`<tr><td><b>${r.ai}</b><span class="role">${r.role}</span></td><td>${esc(r.concl)}</td><td><span class="verdict ${r.v}">${r.vt}</span></td></tr>`).join("");
+$("consensus").innerHTML=consensusTxt;
+$("monitor").innerHTML=monitor.map(m=>`<div class="m"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join("");
+
+// datalist + chips
+$("stocklist").innerHTML=universe.map(s=>`<option value="${s.name}">${s.code} · ${s.sector}</option>`).join("");
+$("chips").innerHTML=["삼성전자","SK하이닉스","한화에어로스페이스","카카오","에코프로","두산로보틱스"].map(n=>`<span class="chip" data-n="${n}">${n}</span>`).join("");
+
+// detail render
+function gaugeHtml(score,tone){
+  return `<div class="gauge"><div class="glabels"><span>비관</span><span>중립</span><span>낙관</span></div>`+
+   `<div class="gtrack"><div class="gmark" style="left:${score}%"></div></div>`+
+   `<div class="gtone">전망 톤: ${esc(tone)}</div></div>`;
+}
+function chartBlock(){ return '<div style="margin-top:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">일별 주가 + 이동평균(5·20·60) <span id="chartstatus"></span></div><div style="height:200px;position:relative"><canvas id="pxchart"></canvas></div></div>'; }
+let pxChartObj=null;
+function ma(arr,p){ return arr.map((_,i)=> i<p-1?null:+(arr.slice(i-p+1,i+1).reduce((a,b)=>a+b,0)/p).toFixed(0)); }
+function drawChart(labels,closes){
+  const el=$("pxchart"); if(!el||!window.Chart) return;
+  if(pxChartObj){try{pxChartObj.destroy();}catch(e){}}
+  pxChartObj=new Chart(el,{type:"line",data:{labels:labels,datasets:[
+    {label:"종가",data:closes,borderColor:"#1d6fd0",borderWidth:1.6,pointRadius:0,tension:.12},
+    {label:"5",data:ma(closes,5),borderColor:"#1f9d5b",borderWidth:1,pointRadius:0},
+    {label:"20",data:ma(closes,20),borderColor:"#d98a00",borderWidth:1,pointRadius:0},
+    {label:"60",data:ma(closes,60),borderColor:"#d23f3f",borderWidth:1,pointRadius:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{display:true,labels:{boxWidth:10,font:{size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+": "+(c.parsed.y!=null?c.parsed.y.toLocaleString()+"원":"-")}}},
+    scales:{x:{ticks:{maxTicksLimit:6,font:{size:9}},grid:{display:false}},y:{position:"right",ticks:{font:{size:9},callback:v=>v.toLocaleString()}}}}});
+}
+async function loadChart(s){
+  const host=$("chartstatus"); const code=pad6(s.code);
+  if(!/^[0-9]{6}$/.test(code)){ if(host) host.textContent="— 차트 미지원"; return; }
+  if(chartCache[code]){ if(host) host.textContent="(최근 "+chartCache[code].closes.length+"일)"; drawChart(chartCache[code].labels,chartCache[code].closes); return; }
+  if(!inCowork() && !backendOn()){ if(host) host.textContent="— 차트는 앱(Cowork) 또는 백엔드 연결 시 제공"; return; }
+  if(host) host.textContent="— 불러오는 중…";
+  try{
+    let labels=[], closes=[];
+    if(inCowork()){
+      const csv='hist\n"=GOOGLEFINANCE(""KRX:'+code+'"",""close"",TODAY()-200,TODAY(),""DAILY"")"';
+      let f=await window.cowork.callMcpTool(DRIVE_CREATE,{title:"차트_"+code,contentMimeType:"text/csv",textContent:csv});
+      if(typeof f==="string"){try{f=JSON.parse(f);}catch(e){}}
+      let fid=(f&&f.id)||(f&&f.content&&f.content[0]&&f.content[0].text&&JSON.parse(f.content[0].text).id);
+      if(!fid) throw new Error("no id");
+      let rr=await window.cowork.callMcpTool(DRIVE_READ,{fileId:fid});
+      let raw=rr; if(raw&&raw.content&&raw.content[0]&&raw.content[0].text!==undefined) raw=raw.content[0].text;
+      let txt=""; if(raw&&typeof raw==="object"&&raw.fileContent) txt=raw.fileContent; else if(typeof raw==="string"){try{const o=JSON.parse(raw);txt=(o&&o.fileContent)?o.fileContent:raw;}catch(e){txt=raw;}} else txt=String(raw||"");
+      txt=txt.replace(/\\n/g,"\n");
+      txt.split("\n").forEach(line=>{
+        const c=line.split("|").map(x=>x.trim()).filter(x=>x!=="");
+        if(c.length>=2){
+          const v=parseFloat((c[c.length-1]||"").replace(/[^0-9.\-]/g,""));
+          const dm=(c[0]||"").replace(/\\/g,"").match(/(\d+)\D+(\d+)\D+(\d+)/);
+          if(!isNaN(v)&&dm){ closes.push(v); labels.push(dm[2]+"/"+dm[3]); }
+        }
+      });
+    } else {
+      await ensureToken();
+      const res=await fetch(burl("/history?code="+code),{headers:{"X-Access-Token":ACCESS_TOKEN||""}});
+      if(res.status===401){ ACCESS_TOKEN=null; throw new Error("암호 오류"); }
+      if(!res.ok) throw new Error("history "+res.status);
+      const j=await res.json(); labels=j.labels||[]; closes=(j.closes||[]).map(Number);
+    }
+    if(closes.length<2){ if(host) host.textContent="— 데이터 없음(구글 미커버 가능)"; return; }
+    chartCache[code]={labels,closes};
+    if(host) host.textContent="(최근 "+closes.length+"일)";
+    drawChart(labels,closes);
+  }catch(e){ if(host) host.textContent="— 불러오기 실패"; }
+}
+function renderDetail(s){
+  if(!s){$("detail").innerHTML='<div style="color:#5b636e;font-size:13px;padding:6px">위 입력창에 종목명이나 코드를 넣어보세요. 추천·비추천 목록을 눌러도 됩니다.</div>';return;}
+  curStock=s;
+  if(s.basic){ renderBasic(s); return; }
+  const ptLabel=s.g==="buy"?"강점":"우려 포인트";
+  $("detail").innerHTML=
+   `<div class="dhead"><div><div class="dnm">${esc(s.name)}</div><div class="dcode">${s.code} · ${esc(s.sector)} · ${s.g==="buy"?"🟢 관심군":"🔴 주의군"}</div></div>`+
+   `<span class="lite lite-${s.light}">${liteTxt[s.light]}</span></div>`+
+   `<div class="dsum">💡 ${esc(s.sum)}</div>`+
+   liveDetail(s.code)+
+   gaugeHtml(s.score,s.tone)+
+   `<div class="dcols">`+
+     `<div class="dbox"><div class="bt">${ptLabel}</div><ul>${s.pts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div>`+
+     `<div class="dbox"><div class="bt">핵심 리스크</div><div class="risk">⚠ ${esc(s.risk)}</div><div class="bt" style="margin-top:8px">6개월 전망</div><div style="font-size:12.5px">${esc(s.out)}</div></div>`+
+   `</div>`+
+   `<div class="dmeta"><span class="mbadge ${confCls[s.conf]}">확신도 ${s.conf}</span><span class="aibadge" title="4개 AI 동시투표가 아니라 분석 확신도 환산값">🤖 확신도 ${s.ai}</span><span class="mbadge">${liteTxt[s.light]}</span></div>`+
+   `<a class="dsrc" href="${s.url}" target="_blank" rel="noopener">출처: ${esc(s.src)} ↗</a>`+
+   ((aiOn()||backendOn())?`<div class="aibtnrow"><button id="aibtn" class="aibtn">🤖 AI 실시간 의견 보기</button></div>`:`<div class="aibtnrow"><span style="font-size:11px;color:var(--muted)">🤖 AI 실시간 의견 — 앱(Cowork) 또는 백엔드 연결 시 제공</span></div>`)+
+   `<div id="aiopinion"></div>`+
+   chartBlock()+
+   `<div style="font-size:10px;color:#8a9099;margin-top:8px">※ 정보 정리이며 매매 권유가 아닙니다.</div>`;
+  const ab=$("aibtn"); if(ab) ab.addEventListener("click",()=>aiOpinion(s));
+  loadChart(s);
+  $("detail").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+let liveTried={};
+async function fetchLiveOne(code){
+  if(backendOn()){ const m=await apiQuotes([code]); const kk=pad6(code); if(m[kk]) liveMap[kk]=m[kk]; return m[kk]||null; }
+  let fid=quoteSheet[code];
+  if(!fid){
+    const g=f=>'"=GOOGLEFINANCE(""KRX:'+code+'"",""'+f+'"")"';
+    const csv='code,name,price,changepct\n'+code+','+g('name')+','+g('price')+','+g('changepct');
+    let f=await window.cowork.callMcpTool(DRIVE_CREATE,{title:"조회_"+code,contentMimeType:"text/csv",textContent:csv});
+    if(typeof f==="string"){try{f=JSON.parse(f);}catch(e){}}
+    fid=(f&&f.id)||(f&&f.content&&f.content[0]&&f.content[0].text&&JSON.parse(f.content[0].text).id);
+    if(!fid) throw new Error("no id");
+    quoteSheet[code]=fid;
+  }
+  let rr=await window.cowork.callMcpTool(DRIVE_READ,{fileId:fid});
+  let raw=rr; if(raw&&raw.content&&raw.content[0]&&raw.content[0].text!==undefined) raw=raw.content[0].text;
+  let txt=""; if(raw&&typeof raw==="object"&&raw.fileContent) txt=raw.fileContent;
+  else if(typeof raw==="string"){try{const o=JSON.parse(raw);txt=(o&&o.fileContent)?o.fileContent:raw;}catch(e){txt=raw;}}
+  else txt=String(raw||"");
+  txt=txt.replace(/\\n/g,"\n");
+  const m=parseSheet(txt), k=pad6(code);
+  if(m[k]) liveMap[k]=m[k];
+  return m[k]||null;
+}
+function renderBasic(s){
+  const k=pad6(s.code);
+  if((inCowork()||backendOn()) && !liveMap[k] && !liveTried[k] && /^[0-9]{6}$/.test(k)){liveTried[k]=1; fetchLiveOne(k).then(()=>{if(curStock&&pad6(curStock.code)===k) renderBasic(s);}).catch(()=>{});}
+  $("detail").innerHTML=
+   `<div class="dhead"><div><div class="dnm">${esc(s.name)}</div><div class="dcode">${s.code} · ${esc(s.sector)} · 주요 종목(시세·AI의견 제공)</div></div></div>`+
+   `<div class="dsum">💡 실시간(약 20분 지연) 시세와 AI 의견을 제공합니다. 관심/주의 심층 분석(20종목)에는 포함되지 않은 종목입니다.</div>`+
+   liveDetail(s.code)+
+   ((aiOn()||backendOn())?`<div class="aibtnrow"><button id="aibtn" class="aibtn">🤖 AI 실시간 의견 보기</button></div>`:`<div class="aibtnrow"><span style="font-size:11px;color:var(--muted)">🤖 AI 실시간 의견 — 앱(Cowork) 또는 백엔드 연결 시 제공</span></div>`)+
+   `<div id="aiopinion"></div>`+
+   chartBlock()+
+   `<div style="font-size:10px;color:#8a9099;margin-top:8px">※ 정보 정리이며 매매 권유가 아닙니다.</div>`;
+  const ab=$("aibtn"); if(ab) ab.addEventListener("click",()=>aiOpinion(s));
+  loadChart(s);
+  $("detail").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+async function aiOpinion(s){
+  const box=$("aiopinion"); if(!box) return;
+  if(!aiOn() && !backendOn()){ box.innerHTML='<div class="aiout off">🤖 AI 실시간 의견은 Claude 앱(Cowork) 또는 백엔드 연결 시 작동합니다.</div>'; return; }
+  box.innerHTML='<div class="aiout">🤖 Claude가 분석 중…</div>';
+  const v=liveMap[pad6(s.code)];
+  const ctx={종목:s.name,코드:s.code,섹터:s.sector,분류:(s.g==="buy"?"관심군":"주의군"),
+    요약:s.sum,포인트:s.pts,핵심리스크:s.risk,"6개월전망":s.out,확신도:s.conf,
+    라이브가격:(v?v.price+"원":"미확인"),등락률:(v?v.rate+"%":"미확인")};
+  const prompt="당신은 한국 주식 애널리스트입니다. 아래 한 종목의 데이터만 근거로, 초보 투자자가 이해하기 쉽게 4개 관점을 각각 한 문장으로 제시하세요: (1) 펀더멘털 (2) 수급·가격 흐름 (3) 핵심 리스크 (4) 종합. 그 뒤 마지막 줄에 '신호등: 🟢관심/🟡중립/🔴주의 중 하나 — 한 줄 이유'를 쓰세요. 투자 자문이 아니라 정보 정리이며 확정적 매수/매도 표현은 피합니다. 한국어로 간결하게, 각 줄 앞에 번호를 붙이세요.";
+  try{
+    let txt;
+    if(inCowork() && aiOn()){ const out=await window.cowork.askClaude(prompt,[ctx]); txt=(typeof out==="string")?out:(out&&out.text?out.text:JSON.stringify(out)); }
+    else { txt=await apiAI(ctx, prompt); }
+    box.innerHTML='<div class="aiout"><div class="aihd">🤖 Claude 실시간 의견 (위 데이터 + 라이브 시세 기반)</div>'+
+      esc(txt).replace(/\n/g,"<br>")+
+      '<div class="ainote">※ 호출 가능한 AI가 Claude뿐이라, Claude가 4개 관점으로 분석한 결과입니다. ChatGPT·Gemini·Perplexity까지의 실제 4종 호출은 별도 연동이 필요합니다.</div></div>';
+  }catch(e){
+    box.innerHTML='<div class="aiout off">AI 의견을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>';
+  }
+}
+function toEntry(u){
+  const full=stocks.find(s=>s.code===u.code);
+  return full || {code:u.code,name:u.name,sector:u.sector,basic:true};
+}
+function findStock(q){
+  q=(q||"").trim(); if(!q) return null;
+  const ql=q.toLowerCase();
+  const codeq=/^[0-9]{1,6}$/.test(q)?pad6(q):null;
+  let hit=stocks.find(s=>s.name.toLowerCase()===ql||(codeq&&s.code===codeq)); if(hit) return hit;
+  let u=universe.find(s=>s.name.toLowerCase()===ql||(codeq&&s.code===codeq)); if(u) return toEntry(u);
+  hit=stocks.find(s=>s.name.toLowerCase().includes(ql)); if(hit) return hit;
+  u=universe.find(s=>s.name.toLowerCase().includes(ql)); if(u) return toEntry(u);
+  return null;
+}
+async function doLookup(){
+  const q=($("q").value||"").trim(); if(!q) return;
+  const s=findStock(q);
+  if(s){renderDetail(s);return;}
+  const code=/^[0-9]{6}$/.test(q)?q:null;
+  if(code && (inCowork()||backendOn())){
+    if(looking) return; looking=true;
+    $("detail").innerHTML='<div class="aiout">🔎 '+esc(code)+' 시세 조회 중…</div>';
+    try{
+      const q1=await fetchLiveOne(code);
+      const u=universe.find(x=>x.code===pad6(code)); const nm=u?u.name:code;
+      if(q1) renderDetail({code:pad6(code),name:nm,sector:(u?u.sector:"코스피/코스닥"),basic:true});
+      else $("detail").innerHTML='<div class="aiout off">'+esc(code)+' 시세를 가져오지 못했습니다. 코스닥 소형주는 구글파이낸스 미지원일 수 있어요(추후 KIS 연동).</div>';
+    }catch(e){ $("detail").innerHTML='<div class="aiout off">조회 중 오류가 발생했습니다. 다시 시도해 주세요.</div>'; }
+    finally{ looking=false; }
+    return;
+  }
+  if(code){ $("detail").innerHTML='<div style="font-size:13px;color:#5b636e;padding:6px">외부 보기 모드에서는 6자리 코드 즉석조회가 제한됩니다(앱·백엔드에서 지원). 자동완성의 코스피 종목을 선택해 주세요.</div>'; return; }
+  $("detail").innerHTML='<div style="font-size:13px;color:#5b636e;padding:6px">"'+esc(q)+'" 을(를) 목록에서 찾지 못했습니다. 자동완성의 종목명이나 6자리 종목코드를 입력해 보세요.</div>';
+}
+$("qbtn").addEventListener("click",doLookup);
+$("q").addEventListener("keydown",e=>{if(e.key==="Enter")doLookup();});
+$("q").addEventListener("change",doLookup);
+$("chips").addEventListener("click",e=>{const n=e.target.getAttribute("data-n");if(n){$("q").value=n;doLookup();}})
