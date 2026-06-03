@@ -779,4 +779,35 @@ async function doLookup(){
 $("qbtn").addEventListener("click",doLookup);
 $("q").addEventListener("keydown",e=>{if(e.key==="Enter")doLookup();});
 $("q").addEventListener("change",doLookup);
-$("chips").addEventListener("click",e=>{const n=e.target.getAttribute("data-n");if(n){$("q").value=n;doLookup();}})
+$("chips").addEventListener("click",e=>{const n=e.target.getAttribute("data-n");if(n){$("q").value=n;doLookup();}});
+
+// reco lists
+function rrow(s){
+  const lp=liveStr(s.code);
+  return `<div class="rrow" data-code="${s.code}"><span class="rlite">${s.light==="g"?"🟢":s.light==="y"?"🟡":"🔴"}</span>`+
+   `<div class="rmain"><div class="rnm">${esc(s.name)}<span class="rcode">${s.code}</span></div><div class="rsum">${esc(s.sum)}</div></div>`+
+   `<div class="rright"><span class="rai" title="분석 확신도 환산(4개 AI 동시투표 아님)">🤖 ${s.ai}</span><span class="rsec">${esc(s.sector)}</span>${lp}</div></div>`;
+}
+renderLists();
+
+// guide
+const profMeta=[{id:"stable",t:"🛡️ 안정형",d:"가치·배당"},{id:"neutral",t:"⚖️ 중립형",d:"균형"},{id:"growth",t:"🚀 성장형",d:"공격적 성장"},{id:"trade",t:"⚡ 단기 트레이딩",d:"단기매매"}];
+$("profgrid").innerHTML=profMeta.map(p=>`<div class="profbtn" data-id="${p.id}"><div class="pt">${p.t}</div><div class="pd">${p.d}</div></div>`).join("");
+function renderProfile(pid){
+  document.querySelectorAll(".profbtn").forEach(b=>b.classList.toggle("active",b.dataset.id===pid));
+  const p=profiles[pid];$("guidelabel").textContent=p.name;
+  const a=$("alloc");
+  if(pid==="trade"){a.innerHTML=`<div class="a-eq" style="width:100%">트레이딩 계좌 100% (총자산 5~15%)</div>`;}
+  else{a.innerHTML=`<div class="a-eq" style="width:${p.eq}%">${p.eq}%</div><div class="a-bd" style="width:${p.bd}%">${p.bd}%</div><div class="a-csh" style="width:${p.csh}%">${p.csh}%</div>`;}
+  $("gtable").innerHTML=p.rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("");
+}
+document.querySelectorAll(".profbtn").forEach(b=>b.addEventListener("click",()=>renderProfile(b.dataset.id)));
+
+// init
+renderProfile("neutral");
+renderDetail(stocks[0]);
+loadLive();
+loadContent();
+</script>
+</body>
+</html>
