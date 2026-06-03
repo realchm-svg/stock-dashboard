@@ -8,7 +8,7 @@ const fs = require("fs");
 
 // 공개 구글시트(지수·환율) gviz CSV — 본인 시트 ID로 교체 가능
 const MACRO_CSV = "https://docs.google.com/spreadsheets/d/1eeEwRXUiExYa-wt6IFq3dyvcvqHhvJxls84dLp-XuIw/gviz/tq?tqx=out:csv";
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const MODELS = process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-2.0-flash"];
 const KEY = process.env.GEMINI_API_KEY || "";
 
 function todayKST() {
@@ -30,19 +30,28 @@ async function getMacro() {
 }
 
 async function gemini(prompt) {
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL + ":generateContent?key=" + KEY;
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
-    }),
-  });
-  const d = await r.json();
-  const txt = d && d.candidates && d.candidates[0] && d.candidates[0].content
-    && d.candidates[0].content.parts[0].text;
-  return JSON.parse(txt);
+  let lastErr = "응답 없음";
+  for (const model of MODELS) {
+    try {
+      const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + KEY;
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
+        }),
+      });
+      const d = await r.json();
+      if (d.error) { lastErr = model + ": " + (d.error.message || JSON.stringify(d.error)); continue; }
+      const txt = d && d.candidates && d.candidates[0] && d.candidates[0].content
+        && d.candidates[0].content.parts && d.candidates[0].content.parts[0].text;
+      if (!txt) { lastErr = model + ": 빈 응답"; continue; }
+      console.log("사용 모델:", model);
+      return JSON.parse(txt);
+    } catch (e) { lastErr = model + ": " + e.message; }
+  }
+  throw new Error(lastErr);
 }
 
 (async () => {
