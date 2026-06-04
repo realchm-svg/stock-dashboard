@@ -389,6 +389,7 @@ let aiRows=[
  {ai:"ChatGPT Pro",role:"교차검증",concl:"수치 대체로 일치, 단 하반기 1만 목표는 가정 의존적 → 확신도 하향",v:"v-solo",vt:"검증"}
 ];
 let consensusTxt="<b>합의:</b> 4개 AI 모두 '추세는 상승, 그러나 변동성·반도체 쏠림 리스크 병존'에 수렴. <b>이견:</b> 상승 폭과 조정 강도. → 한 방향 베팅보다 분할·분산 대응 시사.";
+let globalNote="";
 
 const profiles={
  stable:{name:"안정형",eq:30,bd:45,csh:25,rows:[["주식","20~40%"],["채권","40~50%"],["현금","15~30%"],["기간","5년+ 장기"],["방식","분할(적립식)"],["한 종목 최대","5% 내외"]]},
@@ -509,6 +510,7 @@ async function loadContent(){
     if(Array.isArray(c.aiRows)) aiRows=c.aiRows;
     if(typeof c.consensusTxt==="string") consensusTxt=c.consensusTxt;
     if(Array.isArray(c.monitor)) monitor=c.monitor;
+    if(typeof c.globalNote==="string"){globalNote=c.globalNote; if(window.__gnote)window.__gnote(globalNote);}
     rerenderContent();
     const u=$("asof"); if(u && c.updated) u.textContent="분석 콘텐츠 자동 갱신: "+c.updated+" · 시세는 약 20분 지연.";
   }catch(e){}
@@ -808,6 +810,50 @@ renderProfile("neutral");
 renderDetail(stocks[0]);
 loadLive();
 loadContent();
+</script>
+<script>
+(function(){
+  var GLOBAL_ID="1n1EiOpELKDLb1gTMjfN-ZKGSvU4NYLJepNsNvYg3SK8";
+  var DRIVE="mcp__260dbc13-34e5-453f-8329-444f4f5b3f81__read_file_content";
+  var IDX=["SPX","IXIC","DJI","N225","HSI","SX5E","UKX"];
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function num(x){var n=parseFloat(String(x).replace(/[^0-9.\-]/g,""));return isNaN(n)?null:n;}
+  function parseG(txt){txt=String(txt||"").replace(/\\n/g,"\n");var out=[];
+    txt.split(/\r?\n/).forEach(function(line){if(line.indexOf("|")<0)return;
+      var c=line.split("|").map(function(s){return s.trim();}).filter(function(s){return s!=="";});
+      if(c.length<4)return; if(c[0]==="code"||/[:]/.test(c[0]))return; if(!/^[A-Za-z0-9.]+$/.test(c[0]))return;
+      var p=num(c[2]); if(p===null)return; out.push({code:c[0],name:c[1],price:p,chg:num(c[3])});});return out;}
+  function fmtP(n){return n>=1000?Math.round(n).toLocaleString():n.toLocaleString(undefined,{maximumFractionDigits:2});}
+  function chgHtml(chg){if(chg===null)return '<span style="color:#888">·</span>';var up=chg>=0,col=up?"#d33":"#1565c0";
+    return '<span style="color:'+col+';font-weight:600">'+(up?"▲":"▼")+Math.abs(chg).toFixed(2)+'%</span>';}
+  function tickHtml(it){return '<div class="tick"><div class="k">'+esc(it.name||it.code)+'</div><div class="v">'+fmtP(it.price)+'</div><div class="c">'+chgHtml(it.chg)+'</div></div>';}
+  function gnoteText(){try{if(typeof globalNote!=="undefined"&&globalNote)return globalNote;}catch(e){}return "";}
+  window.__gnote=function(t){var el=document.getElementById("gnote");if(el)el.innerHTML=t?("🗒️ "+esc(t)):"";};
+  function card(){if(document.getElementById("globalcard"))return;
+    var host=document.createElement("div");host.className="card";host.id="globalcard";
+    host.innerHTML='<h2><span class="dot" style="background:#5b8def"></span>🌐 미국·글로벌 시장 <span style="font-weight:500;color:#888;font-size:12px">지연 시세(약 15~20분) · GOOGLEFINANCE</span></h2><div class="sub">미국 3대 지수·주요 글로벌 지수와 미국 대표 종목. 정보 정리이며 매매 권유가 아닙니다.</div><div id="gnote" class="sub" style="color:#3b3a86;background:#eef1fe;border-radius:8px;padding:8px 10px;margin:6px 0"></div><div id="gidx" class="ticks" style="margin-top:6px"></div><div style="font-weight:600;margin:12px 2px 6px">미국 대표 종목</div><div id="gstk" class="ticks"></div><div id="gstatus" class="asof" style="margin-top:8px">불러오는 중…</div>';
+    var asof=document.getElementById("asof");
+    if(asof&&asof.parentNode){asof.parentNode.insertBefore(host,asof.nextSibling);}
+    else{var w=document.querySelector(".wrap");if(w)w.insertBefore(host,w.firstChild);else document.body.appendChild(host);}
+    window.__gnote(gnoteText());}
+  function render(rows){var idx=rows.filter(function(r){return IDX.indexOf(r.code)>=0;});
+    var stk=rows.filter(function(r){return IDX.indexOf(r.code)<0;});
+    var gi=document.getElementById("gidx"),gs=document.getElementById("gstk"),st=document.getElementById("gstatus");
+    if(gi)gi.innerHTML=idx.map(tickHtml).join("");if(gs)gs.innerHTML=stk.map(tickHtml).join("");
+    if(st)st.textContent=rows.length?("연결됨 · "+rows.length+"개 · 지연 시세"):"시세를 읽지 못했습니다(시트 확인).";}
+  async function load(){card();
+    try{var txt="";
+      if(window.cowork&&window.cowork.callMcpTool){var r=await window.cowork.callMcpTool(DRIVE,{fileId:GLOBAL_ID});
+        var raw=r;if(raw&&raw.content&&raw.content[0]&&raw.content[0].text!==undefined)raw=raw.content[0].text;
+        if(raw&&typeof raw==="object"&&raw.fileContent)txt=raw.fileContent;
+        else if(typeof raw==="string"){try{var o=JSON.parse(raw);txt=(o&&o.fileContent)?o.fileContent:raw;}catch(e){txt=raw;}}else txt=String(raw||"");
+      }else{var res=await fetch("https://docs.google.com/spreadsheets/d/"+GLOBAL_ID+"/gviz/tq?tqx=out:csv");txt=await res.text();
+        if(txt.indexOf("|")<0){txt=txt.split(/\r?\n/).map(function(l){return "| "+l.split(",").map(function(x){return x.replace(/^"|"$/g,"");}).join(" | ")+" |";}).join("\n");}}
+      render(parseG(txt));
+    }catch(e){var st=document.getElementById("gstatus");if(st)st.textContent="시세 연결 실패 — 시트 공개 설정/커넥터 확인";}}
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load);else load();
+  window.addEventListener("load",load);
+})();
 </script>
 </body>
 </html>
