@@ -157,7 +157,7 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
   <div class="grid2">
     <div class="card">
       <h2><span class="dot" style="background:var(--up)"></span>① 국내 증시 분석 — 지금 무슨 일이</h2>
-      <div class="sub">여러 AI 관점(수집·추론·종합·검증)으로 정리한 핵심 동인 · 실시간 AI 호출은 Claude 1종 · 2026-05-30</div>
+      <div class="sub">여러 AI 관점(수집·추론·종합·검증)으로 정리한 핵심 동인 · 실시간 AI 호출은 Claude 1종</div>
       <ul class="brief" id="brief"></ul>
     </div>
     <div class="card">
@@ -223,10 +223,10 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 
   <div class="disc">
     <b>면책 고지</b> — 본 프로그램은 여러 AI의 분석을 비교·정리한 <b>정보 도구</b>이며 투자 자문이 아닙니다. 특정 종목의 매수·매도를 권유하지 않습니다. <b>본 도구 제공자는 투자자문업·유사투자자문업 등록/신고 사업자가 아니며, 투자 원금 손실이 발생할 수 있습니다.</b> '관심/주의' 분류와 '확신도 n/4'는 정보 정리용 표시이지 4개 AI의 실제 동시투표 결과가 아닙니다.
-    '추천/비추천'과 신호등은 2026-05-30 기준 공개 보도·리포트 근거의 정보 정리이며, AI는 오류·환각을 포함할 수 있고 과거가 미래를 보장하지 않습니다.
+    '추천/비추천'과 신호등은 최신 공개 보도·리포트 근거의 정보 정리이며, AI는 오류·환각을 포함할 수 있고 과거가 미래를 보장하지 않습니다.
     종목코드·수치는 매매 전 거래소(KRX)에서 재확인하시고, 모든 투자 판단과 책임은 이용자 본인에게 있습니다. 시세는 Google Finance(약 20분 지연) 기준이며, 코스닥 일부는 미지원입니다. 코스닥 포함 전 종목 체결가 실시간은 한국투자증권 KIS 연동 시 제공됩니다.
   </div>
-  <div class="foot">생성: 국내주식·해외주식·거시리스크·AI·플랫폼·마케팅 6개 전문가 에이전트 협업 · 분석 기준 2026-05-30</div>
+  <div class="foot">생성: 국내주식·해외주식·거시리스크·AI·플랫폼·마케팅 6개 전문가 에이전트 협업 · 분석 기준 2026-06-04</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
@@ -590,7 +590,7 @@ async function loadLive(){
 $("ticks").innerHTML=ticks.map(t=>`<div class="tick"><div class="k">${t.k}</div><div class="v"${t.key?` id="tv_${t.key}"`:""}>${t.v}</div><div class="c ${t.dir}"${t.key?` id="tc_${t.key}"`:""}>${t.c}</div></div>`).join("");
 (function(){const mb=$("modebadge"); if(mb) mb.textContent = inCowork()?"앱: 풀기능":(BACKEND_URL?"외부: 백엔드 연결":"외부: 보기모드(지연·AI/차트 제한)");})();
 loadMacro();
-$("asof").textContent="시세: Google Finance 연동(약 20분 지연) · 코스피 전체 838종목 이름검색 지원. 코스닥·코넥스 실시간과 체결가 실시간은 추후 KIS 연동에서 제공. 분석 기준 2026-05-30.";
+$("asof").textContent="시세: Google Finance 연동(약 20분 지연) · 코스피 전체 838종목 이름검색 지원. 코스닥·코넥스 실시간과 체결가 실시간은 추후 KIS 연동에서 제공. 분석 기준일은 상단 갱신일 참고.";
 $("brief").innerHTML=brief.map(b=>`<li><span class="tag ${b.c}">${b.t}</span>${esc(b.x)}</li>`).join("");
 $("scenarios").innerHTML=scenarios.map(s=>`<div class="row"><div class="h">${s.pl}<span class="p ${s.p}">${s.h}</span></div><div class="d">${esc(s.d)}</div></div>`).join("");
 $("aibody").innerHTML=aiRows.map(r=>`<tr><td><b>${r.ai}</b><span class="role">${r.role}</span></td><td>${esc(r.concl)}</td><td><span class="verdict ${r.v}">${r.vt}</span></td></tr>`).join("");
