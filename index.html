@@ -390,6 +390,7 @@ let aiRows=[
 ];
 let consensusTxt="<b>합의:</b> 4개 AI 모두 '추세는 상승, 그러나 변동성·반도체 쏠림 리스크 병존'에 수렴. <b>이견:</b> 상승 폭과 조정 강도. → 한 방향 베팅보다 분할·분산 대응 시사.";
 let globalNote="";
+let watch=[{"g": "buy", "watch": true, "code": "035720", "name": "카카오", "sector": "인터넷 플랫폼", "light": "y", "score": 52, "tone": "중립", "conf": "중", "ai": "3/4", "sum": "1분기 사상 최대 실적·'AI 에이전트' 전환 기대와 본사 파업 우려·목표가 하향이 맞서는 플랫폼 대표주. 6월 주가는 신저가권 박스 약세.", "pts": ["2026년 1분기 매출 1.94조·영업익 2,114억(+66%)로 1분기 사상 최대", "'ChatGPT for Kakao' 출시 10일 만에 이용자 200만 돌파(OpenAI 협력)"], "risk": "본사 파업 등 노사 갈등 장기화 우려와 AI 수익화 초기 단계의 네이버·구글·OpenAI 경쟁.", "out": "펀더멘털은 개선세이나 노사 이슈·차익실현으로 단기 박스권 약세 가능. 증권가 목표가 편차 큼.", "src": "네이트뉴스", "url": "https://news.nate.com/view/20260528n27011"}, {"g": "buy", "watch": true, "code": "004020", "name": "현대제철", "sector": "철강", "light": "y", "score": 58, "tone": "중립~낙관", "conf": "중", "ai": "3/4", "sum": "1분기 실적은 컨센서스를 크게 하회했으나 K-스틸법 시행·미국 제철소 투자·하반기 판가 인상으로 '업황 바닥 통과' 기대가 우세한 철강 대표주.", "pts": ["미국 루이지애나 제철소 58억달러 투자(2029 준공)·인센티브 ~26억달러 확보", "K-스틸법 6/17 시행 + 인천 전기로 감축 등 선제 구조조정"], "risk": "1분기 영업익 157억(전분기비 -64%)·본사 적자 등 수익성 부진, 미 통상·관세 불확실성.", "out": "2분기 판가 인상 전가로 본사 흑자 반등 기대, 업황 개선 방향성은 유효.", "src": "스틸데일리", "url": "https://www.steeldaily.co.kr/news/articleView.html?idxno=191224"}];
 
 const profiles={
  stable:{name:"안정형",eq:30,bd:45,csh:25,rows:[["주식","20~40%"],["채권","40~50%"],["현금","15~30%"],["기간","5년+ 장기"],["방식","분할(적립식)"],["한 종목 최대","5% 내외"]]},
@@ -510,6 +511,7 @@ async function loadContent(){
     if(Array.isArray(c.aiRows)) aiRows=c.aiRows;
     if(typeof c.consensusTxt==="string") consensusTxt=c.consensusTxt;
     if(Array.isArray(c.monitor)) monitor=c.monitor;
+    if(Array.isArray(c.watch)) watch=c.watch;
     if(typeof c.globalNote==="string"){globalNote=c.globalNote; if(window.__gnote)window.__gnote(globalNote);}
     rerenderContent();
     const u=$("asof"); if(u && c.updated) u.textContent="분석 콘텐츠 자동 갱신: "+c.updated+" · 시세는 약 20분 지연.";
@@ -665,9 +667,9 @@ function renderDetail(s){
   if(!s){$("detail").innerHTML='<div style="color:#5b636e;font-size:13px;padding:6px">위 입력창에 종목명이나 코드를 넣어보세요. 추천·비추천 목록을 눌러도 됩니다.</div>';return;}
   curStock=s;
   if(s.basic){ renderBasic(s); return; }
-  const ptLabel=s.g==="buy"?"강점":"우려 포인트";
+  const ptLabel=s.watch?"체크 포인트":(s.g==="buy"?"강점":"우려 포인트");
   $("detail").innerHTML=
-   `<div class="dhead"><div><div class="dnm">${esc(s.name)}</div><div class="dcode">${s.code} · ${esc(s.sector)} · ${s.g==="buy"?"🟢 관심군":"🔴 주의군"}</div></div>`+
+   `<div class="dhead"><div><div class="dnm">${esc(s.name)}</div><div class="dcode">${s.code} · ${esc(s.sector)} · ${s.watch?"🔎 검색 상세":(s.g==="buy"?"🟢 관심군":"🔴 주의군")}</div></div>`+
    `<span class="lite lite-${s.light}">${liteTxt[s.light]}</span></div>`+
    `<div class="dsum">💡 ${esc(s.sum)}</div>`+
    liveDetail(s.code)+
@@ -745,7 +747,7 @@ async function aiOpinion(s){
   }
 }
 function toEntry(u){
-  const full=stocks.find(s=>s.code===u.code);
+  const full=stocks.find(s=>s.code===u.code)||((typeof watch!=="undefined")&&watch.find(s=>s.code===u.code))||null;
   return full || {code:u.code,name:u.name,sector:u.sector,basic:true};
 }
 function findStock(q){
