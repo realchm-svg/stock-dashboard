@@ -949,5 +949,38 @@ loadContent();
  window.addEventListener("load",function(){if(!document.getElementById("heatcard"))init();else render();});
 })();
 </script>
+<script>
+/* === 체감 투자심리 게이지 (추적종목 실제 등락 기반) === */
+(function(){
+ function p6(c){try{return pad6(c);}catch(e){return String(c).replace(/[^0-9]/g,"").padStart(6,"0");}}
+ function items(){var a=[];try{if(typeof stocks!=="undefined")a=a.concat(stocks);}catch(e){}try{if(typeof watch!=="undefined")a=a.concat(watch);}catch(e){}
+   var seen={},o=[];a.forEach(function(s){if(s&&s.code&&!seen[s.code]){seen[s.code]=1;o.push(s);}});return o;}
+ function calc(){var its=items(),up=0,n=0,sum=0;its.forEach(function(s){var v=(typeof liveMap!=="undefined")&&liveMap[p6(s.code)];if(v&&typeof v.rate==="number"){n++;sum+=v.rate;if(v.rate>0)up++;}});
+   if(!n)return null;var avg=sum/n,breadth=up/n*100;
+   var score=Math.round(Math.max(0,Math.min(100, 50 + avg*8*0.6 + (breadth-50)*0.8 )));
+   return {score:score,n:n,up:up,avg:avg};}
+ function label(s){return s<20?"극단적 공포":s<40?"공포":s<=60?"중립":s<=80?"탐욕":"극단적 탐욕";}
+ function col(s){return s<40?"#1565c0":s<=60?"#888":"#d63333";}
+ function card(){if(document.getElementById("sentcard"))return;
+   var host=document.createElement("div");host.className="card";host.id="sentcard";
+   host.innerHTML='<h2><span class="dot" style="background:#f59f00"></span>🌡️ 체감 투자심리 <span style="font-weight:500;color:#888;font-size:12px">추적종목 실제 등락 기반(공포↔탐욕)</span></h2><div id="sentbody" style="margin-top:6px"></div><div class="asof" id="sentstatus" style="margin-top:6px"></div>';
+   var anchor=document.getElementById("heatcard")||document.getElementById("watchcard")||document.getElementById("asof");
+   if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(host,anchor);else{var w=document.querySelector(".wrap");if(w)w.appendChild(host);}}
+ function render(){var b=document.getElementById("sentbody");if(!b)return;var r=calc();
+   if(!r){b.innerHTML='<div style="color:#999;font-size:13px">시세 연결 시 계산됩니다…</div>';return;}
+   var c=col(r.score);
+   b.innerHTML='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+     +'<div style="font-size:30px;font-weight:800;color:'+c+'">'+r.score+'</div>'
+     +'<div style="font-weight:700;color:'+c+'">'+label(r.score)+'</div></div>'
+     +'<div style="position:relative;height:10px;border-radius:6px;margin:8px 0;background:linear-gradient(90deg,#1565c0,#9aa0a6,#d63333)">'
+     +'<div style="position:absolute;top:-3px;left:calc('+r.score+'% - 2px);width:4px;height:16px;background:#222;border-radius:2px"></div></div>'
+     +'<div style="display:flex;justify-content:space-between;font-size:10px;color:#999"><span>공포 0</span><span>중립 50</span><span>탐욕 100</span></div>';
+   var st=document.getElementById("sentstatus");if(st)st.textContent="추적 "+r.n+"종목 중 "+r.up+"개 상승 · 평균 "+(r.avg>0?"+":"")+r.avg.toFixed(2)+"% · 참고용(시장 전체 지수 아님)";}
+ var t=0;function tick(){render();t++;if(t<12)setTimeout(tick,3000);}
+ function init(){card();tick();}
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+ window.addEventListener("load",function(){if(!document.getElementById("sentcard"))init();else render();});
+})();
+</script>
 </body>
 </html>
