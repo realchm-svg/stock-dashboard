@@ -406,7 +406,7 @@ let monitor=[
 
 /* ===== RENDER ===== */
 const $=id=>document.getElementById(id);
-const esc=s=>(""+s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const esc=s=>(""+s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const liteTxt={g:"🟢 관심",y:"🟡 중립·관망",r:"🔴 주의"};
 const confCls={"상":"conf-h","중":"conf-m","하":"conf-l"};
 
@@ -494,7 +494,7 @@ function rerenderContent(){
   $("brief").innerHTML=brief.map(b=>`<li><span class="tag ${b.c}">${b.t}</span>${esc(b.x)}</li>`).join("");
   $("scenarios").innerHTML=scenarios.map(s=>`<div class="row"><div class="h">${s.pl}<span class="p ${s.p}">${s.h}</span></div><div class="d">${esc(s.d)}</div></div>`).join("");
   $("aibody").innerHTML=aiRows.map(r=>`<tr><td><b>${r.ai}</b><span class="role">${r.role}</span></td><td>${esc(r.concl)}</td><td><span class="verdict ${r.v}">${r.vt}</span></td></tr>`).join("");
-  $("consensus").innerHTML=consensusTxt;
+  $("consensus").innerHTML=String(consensusTxt||"").replace(/<\s*script/gi,"&lt;script").replace(/\son\w+\s*=/gi," data-x=");
   $("monitor").innerHTML=monitor.map(m=>`<div class="m"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join("");
   $("stocklist").innerHTML=universe.map(s=>`<option value="${s.name}">${s.code} · ${s.sector}</option>`).join("");
   renderLists();
@@ -551,7 +551,7 @@ function renderLists(){
   $("buylist").innerHTML=stocks.filter(s=>s.g==="buy").map(rrow).join("");
   $("avoidlist").innerHTML=stocks.filter(s=>s.g==="avoid").map(rrow).join("");
   document.querySelectorAll(".rrow").forEach(r=>r.addEventListener("click",()=>{
-    const s=stocks.find(x=>x.code===r.getAttribute("data-code"));renderDetail(s);
+    const s=stocks.find(x=>x.code===r.getAttribute("data-code"));renderDetail(s,{scroll:true});
   }));
 }
 async function loadLive(){
@@ -596,7 +596,7 @@ $("asof").textContent="시세: Google Finance 연동(약 20분 지연) · 코스
 $("brief").innerHTML=brief.map(b=>`<li><span class="tag ${b.c}">${b.t}</span>${esc(b.x)}</li>`).join("");
 $("scenarios").innerHTML=scenarios.map(s=>`<div class="row"><div class="h">${s.pl}<span class="p ${s.p}">${s.h}</span></div><div class="d">${esc(s.d)}</div></div>`).join("");
 $("aibody").innerHTML=aiRows.map(r=>`<tr><td><b>${r.ai}</b><span class="role">${r.role}</span></td><td>${esc(r.concl)}</td><td><span class="verdict ${r.v}">${r.vt}</span></td></tr>`).join("");
-$("consensus").innerHTML=consensusTxt;
+$("consensus").innerHTML=String(consensusTxt||"").replace(/<\s*script/gi,"&lt;script").replace(/\son\w+\s*=/gi," data-x=");
 $("monitor").innerHTML=monitor.map(m=>`<div class="m"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join("");
 
 // datalist + chips
@@ -604,7 +604,7 @@ $("stocklist").innerHTML=universe.map(s=>`<option value="${s.name}">${s.code} ·
 $("chips").innerHTML=["삼성전자","SK하이닉스","한화에어로스페이스","카카오","에코프로","두산로보틱스"].map(n=>`<span class="chip" data-n="${n}">${n}</span>`).join("");
 
 // detail render
-function gaugeHtml(score,tone){
+function gaugeHtml(score,tone){score=Math.max(0,Math.min(100,(+score)||0));
   return `<div class="gauge"><div class="glabels"><span>비관</span><span>중립</span><span>낙관</span></div>`+
    `<div class="gtrack"><div class="gmark" style="left:${score}%"></div></div>`+
    `<div class="gtone">전망 톤: ${esc(tone)}</div></div>`;
@@ -663,10 +663,10 @@ async function loadChart(s){
     drawChart(labels,closes);
   }catch(e){ if(host) host.textContent="— 불러오기 실패"; }
 }
-function renderDetail(s){
+function renderDetail(s,opts){
   if(!s){$("detail").innerHTML='<div style="color:#5b636e;font-size:13px;padding:6px">위 입력창에 종목명이나 코드를 넣어보세요. 추천·비추천 목록을 눌러도 됩니다.</div>';return;}
   curStock=s;
-  if(s.basic){ renderBasic(s); return; }
+  if(s.basic){ renderBasic(s,opts); return; }
   const ptLabel=s.watch?"체크 포인트":(s.g==="buy"?"강점":"우려 포인트");
   $("detail").innerHTML=
    `<div class="dhead"><div><div class="dnm">${esc(s.name)}</div><div class="dcode">${s.code} · ${esc(s.sector)} · ${s.watch?"🔎 검색 상세":(s.g==="buy"?"🟢 관심군":"🔴 주의군")}</div></div>`+
@@ -679,14 +679,14 @@ function renderDetail(s){
      `<div class="dbox"><div class="bt">핵심 리스크</div><div class="risk">⚠ ${esc(s.risk)}</div><div class="bt" style="margin-top:8px">6개월 전망</div><div style="font-size:12.5px">${esc(s.out)}</div></div>`+
    `</div>`+
    `<div class="dmeta"><span class="mbadge ${confCls[s.conf]}">확신도 ${s.conf}</span><span class="aibadge" title="4개 AI 동시투표가 아니라 분석 확신도 환산값">🤖 확신도 ${s.ai}</span><span class="mbadge">${liteTxt[s.light]}</span></div>`+
-   `<a class="dsrc" href="${s.url}" target="_blank" rel="noopener">출처: ${esc(s.src)} ↗</a>`+
+   `<a class="dsrc" href="${/^https?:\/\//i.test(s.url||'')?esc(s.url):'#'}" target="_blank" rel="noopener">출처: ${esc(s.src)} ↗</a>`+
    ((aiOn()||backendOn())?`<div class="aibtnrow"><button id="aibtn" class="aibtn">🤖 AI 실시간 의견 보기</button></div>`:`<div class="aibtnrow"><span style="font-size:11px;color:var(--muted)">🤖 AI 실시간 의견 — 앱(Cowork) 또는 백엔드 연결 시 제공</span></div>`)+
    `<div id="aiopinion"></div>`+
    chartBlock()+
    `<div style="font-size:10px;color:#8a9099;margin-top:8px">※ 정보 정리이며 매매 권유가 아닙니다.</div>`;
   const ab=$("aibtn"); if(ab) ab.addEventListener("click",()=>aiOpinion(s));
   loadChart(s);
-  $("detail").scrollIntoView({behavior:"smooth",block:"nearest"});
+  if(opts&&opts.scroll)$("detail").scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 let liveTried={};
 async function fetchLiveOne(code){
@@ -711,7 +711,7 @@ async function fetchLiveOne(code){
   if(m[k]) liveMap[k]=m[k];
   return m[k]||null;
 }
-function renderBasic(s){
+function renderBasic(s,opts){
   const k=pad6(s.code);
   if((inCowork()||backendOn()) && !liveMap[k] && !liveTried[k] && /^[0-9]{6}$/.test(k)){liveTried[k]=1; fetchLiveOne(k).then(()=>{if(curStock&&pad6(curStock.code)===k) renderBasic(s);}).catch(()=>{});}
   $("detail").innerHTML=
@@ -724,7 +724,7 @@ function renderBasic(s){
    `<div style="font-size:10px;color:#8a9099;margin-top:8px">※ 정보 정리이며 매매 권유가 아닙니다.</div>`;
   const ab=$("aibtn"); if(ab) ab.addEventListener("click",()=>aiOpinion(s));
   loadChart(s);
-  $("detail").scrollIntoView({behavior:"smooth",block:"nearest"});
+  if(opts&&opts.scroll)$("detail").scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 async function aiOpinion(s){
   const box=$("aiopinion"); if(!box) return;
@@ -763,7 +763,7 @@ function findStock(q){
 async function doLookup(){
   const q=($("q").value||"").trim(); if(!q) return;
   const s=findStock(q);
-  if(s){renderDetail(s);return;}
+  if(s){renderDetail(s,{scroll:true});return;}
   const code=/^[0-9]{6}$/.test(q)?q:null;
   if(code && (inCowork()||backendOn())){
     if(looking) return; looking=true;
@@ -771,7 +771,7 @@ async function doLookup(){
     try{
       const q1=await fetchLiveOne(code);
       const u=universe.find(x=>x.code===pad6(code)); const nm=u?u.name:code;
-      if(q1) renderDetail({code:pad6(code),name:nm,sector:(u?u.sector:"코스피/코스닥"),basic:true});
+      if(q1) renderDetail({code:pad6(code),name:nm,sector:(u?u.sector:"코스피/코스닥"),basic:true},{scroll:true});
       else $("detail").innerHTML='<div class="aiout off">'+esc(code)+' 시세를 가져오지 못했습니다. 코스닥 소형주는 구글파이낸스 미지원일 수 있어요(추후 KIS 연동).</div>';
     }catch(e){ $("detail").innerHTML='<div class="aiout off">조회 중 오류가 발생했습니다. 다시 시도해 주세요.</div>'; }
     finally{ looking=false; }
@@ -854,7 +854,7 @@ loadContent();
       render(parseG(txt));
     }catch(e){var st=document.getElementById("gstatus");if(st)st.textContent="시세 연결 실패 — 시트 공개 설정/커넥터 확인";}}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load);else load();
-  window.addEventListener("load",load);
+  window.addEventListener("load",function(){if(!document.getElementById("globalcard"))load();});
 })();
 </script>
 <script>
@@ -943,7 +943,7 @@ loadContent();
        +'<div style="font-size:12px;font-weight:800">'+(r!=null?(r>0?"+":"")+r.toFixed(1)+"%":"–")+'</div></div>';});
    html+='</div>'; b.innerHTML=html;
    var st=document.getElementById("heatstatus");if(st)st.textContent=have?("지연 시세 기준 · "+have+"종목 · 칸에 마우스 올리면 섹터 표시"):"시세 연결 시 색상이 채워집니다.";}
- var t=0;function tick(){render();t++;if(t<12)setTimeout(tick,3000);}
+ var t=0;function tick(){render();t++;var n=(typeof liveMap!=="undefined"&&liveMap)?Object.keys(liveMap).length:0;if(n&&t>=2)return;if(t<8)setTimeout(tick,4000);}
  function init(){card();tick();}
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
  window.addEventListener("load",function(){if(!document.getElementById("heatcard"))init();else render();});
@@ -976,20 +976,13 @@ loadContent();
      +'<div style="position:absolute;top:-3px;left:calc('+r.score+'% - 2px);width:4px;height:16px;background:#222;border-radius:2px"></div></div>'
      +'<div style="display:flex;justify-content:space-between;font-size:10px;color:#999"><span>공포 0</span><span>중립 50</span><span>탐욕 100</span></div>';
    var st=document.getElementById("sentstatus");if(st)st.textContent="추적 "+r.n+"종목 중 "+r.up+"개 상승 · 평균 "+(r.avg>0?"+":"")+r.avg.toFixed(2)+"% · 참고용(시장 전체 지수 아님)";}
- var t=0;function tick(){render();t++;if(t<12)setTimeout(tick,3000);}
+ var t=0;function tick(){render();t++;var n=(typeof liveMap!=="undefined"&&liveMap)?Object.keys(liveMap).length:0;if(n&&t>=2)return;if(t<8)setTimeout(tick,4000);}
  function init(){card();tick();}
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
  window.addEventListener("load",function(){if(!document.getElementById("sentcard"))init();else render();});
 })();
 </script>
-<script>
-/* 로드 시 항상 맨 위로 (초기 상세 자동표시의 스크롤 방지) */
-(function(){function top(){try{window.scrollTo(0,0);}catch(e){}}
- if('scrollRestoration' in history){try{history.scrollRestoration='manual';}catch(e){}}
- top();
- window.addEventListener("load",function(){top();setTimeout(top,150);setTimeout(top,500);setTimeout(top,900);});
-})();
-</script>
+<script>(function(){try{if('scrollRestoration' in history)history.scrollRestoration='manual';}catch(e){}window.scrollTo(0,0);window.addEventListener('load',function(){window.scrollTo(0,0);});})();</script>
 <style>
 /* === 레이아웃·디자인 폴리시 (덧입힘) === */
 body{background:linear-gradient(180deg,#eaeef5 0,#f5f6f8 260px)}
