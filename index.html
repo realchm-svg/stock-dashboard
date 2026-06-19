@@ -982,5 +982,13 @@ loadContent();
  window.addEventListener("load",function(){if(!document.getElementById("sentcard"))init();else render();});
 })();
 </script>
+<script>
+/* 로드 시 항상 맨 위로 (초기 상세 자동표시의 스크롤 방지) */
+(function(){function top(){try{window.scrollTo(0,0);}catch(e){}}
+ if('scrollRestoration' in history){try{history.scrollRestoration='manual';}catch(e){}}
+ top();
+ window.addEventListener("load",function(){top();setTimeout(top,150);setTimeout(top,500);setTimeout(top,900);});
+})();
+</script>
 </body>
 </html>
