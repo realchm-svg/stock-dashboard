@@ -857,5 +857,64 @@ loadContent();
   window.addEventListener("load",load);
 })();
 </script>
+<script>
+/* === 관심종목·포트폴리오 모듈 (localStorage) === */
+(function(){
+ var KEY="wl_v2";
+ function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){return [];}}
+ function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
+ function E(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+ function p6(c){try{return pad6(c);}catch(e){return String(c).replace(/[^0-9]/g,"").padStart(6,"0");}}
+ function price(code){var v=(typeof liveMap!=="undefined")&&liveMap[p6(code)];return v||null;}
+ function fmt(n){return Math.round(n).toLocaleString();}
+ function resolve(q){
+   q=(q||"").trim(); if(!q) return null; var ql=q.toLowerCase();
+   var codeq=/^[0-9]{1,6}$/.test(q)?p6(q):null;
+   if(typeof universe!=="undefined"){
+     var u=universe.find(function(s){return s.name.toLowerCase()===ql||(codeq&&s.code===codeq);});
+     if(!u) u=universe.find(function(s){return s.name.toLowerCase().indexOf(ql)>=0;});
+     if(u) return {code:u.code,name:u.name};
+   }
+   return codeq?{code:codeq,name:codeq}:null;
+ }
+ function card(){
+   if(document.getElementById("watchcard"))return;
+   var host=document.createElement("div");host.className="card";host.id="watchcard";
+   host.innerHTML='<h2><span class="dot" style="background:#8e7bef"></span>⭐ 내 관심종목·포트폴리오</h2>'
+   +'<div class="sub">종목을 추가하고 평단가·수량을 입력하면 수익률이 자동 계산됩니다. 이 브라우저에 저장돼요. 정보 정리이며 매매 권유가 아닙니다.</div>'
+   +'<div class="lookbar" style="margin-top:6px"><input id="wlq" list="stocklist" placeholder="예: 삼성전자, 005930, 카카오…" autocomplete="off"><button id="wladd">추가</button></div>'
+   +'<div id="wlbody" style="margin-top:8px;overflow-x:auto"></div>'
+   +'<div id="wltot" class="asof" style="margin-top:8px"></div>';
+   var asof=document.getElementById("asof");
+   if(asof&&asof.parentNode) asof.parentNode.insertBefore(host,asof.nextSibling);
+   else{var w=document.querySelector(".wrap"); if(w) w.appendChild(host);}
+ }
+ function render(){
+   var list=load(); var b=document.getElementById("wlbody"), tot=document.getElementById("wltot"); if(!b)return;
+   if(!list.length){b.innerHTML='<div style="color:#8a9099;font-size:13px;padding:6px">아직 추가한 종목이 없어요. 위에서 종목을 추가해 보세요.</div>'; if(tot)tot.textContent=""; return;}
+   var rows='<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:right;color:#8a9099"><th style="text-align:left;padding:4px">종목</th><th>현재가</th><th>등락</th><th>평단가</th><th>수량</th><th>평가손익</th><th>수익률</th><th></th></tr></thead><tbody>';
+   var tBuy=0,tVal=0,have=false;
+   list.forEach(function(it){
+     var v=price(it.code); var pr=v?v.price:null, rt=v?v.rate:null;
+     var cls=rt>0?"up":(rt<0?"down":"flat"), ar=rt>0?"▲":(rt<0?"▼":"-");
+     var avg=parseFloat(it.avg)||0, qty=parseFloat(it.qty)||0, pl="", plr="";
+     if(pr&&avg>0&&qty>0){var val=pr*qty,buy=avg*qty,d=val-buy,r=d/buy*100;tBuy+=buy;tVal+=val;have=true;var pc=d>=0?"up":"down";pl='<span class="'+pc+'">'+(d>=0?"+":"")+fmt(d)+'</span>';plr='<span class="'+pc+'">'+(d>=0?"+":"")+r.toFixed(2)+'%</span>';}
+     rows+='<tr style="text-align:right;border-top:1px solid #eee"><td style="text-align:left;padding:6px 4px"><b>'+E(it.name)+'</b> <span style="color:#aaa;font-size:11px">'+E(it.code)+'</span></td><td>'+(pr?fmt(pr)+'원':'<span style="color:#bbb">-</span>')+'</td><td class="'+cls+'">'+(rt!=null?ar+Math.abs(rt).toFixed(2)+'%':'-')+'</td><td><input data-c="'+it.code+'" data-f="avg" value="'+E(it.avg||"")+'" inputmode="decimal" style="width:74px;text-align:right" placeholder="평단"></td><td><input data-c="'+it.code+'" data-f="qty" value="'+E(it.qty||"")+'" inputmode="decimal" style="width:54px;text-align:right" placeholder="수량"></td><td>'+(pl||'<span style="color:#bbb">-</span>')+'</td><td>'+(plr||'<span style="color:#bbb">-</span>')+'</td><td><button data-del="'+it.code+'" title="삭제" style="border:none;background:none;cursor:pointer;color:#c33">✕</button></td></tr>';
+   });
+   rows+='</tbody></table>'; b.innerHTML=rows;
+   if(tot){if(have){var d=tVal-tBuy,r=tBuy?d/tBuy*100:0;tot.innerHTML='총 평가손익 <b class="'+(d>=0?"up":"down")+'">'+(d>=0?"+":"")+fmt(d)+'원 ('+(d>=0?"+":"")+r.toFixed(2)+'%)</b> · 매입 '+fmt(tBuy)+' → 평가 '+fmt(tVal);}else tot.textContent="평단가·수량을 입력하면 수익률이 계산됩니다.";}
+   b.querySelectorAll("input[data-c]").forEach(function(inp){inp.addEventListener("change",function(){var c=inp.getAttribute("data-c"),f=inp.getAttribute("data-f"),a=load(),it=a.find(function(x){return x.code===c;});if(it){it[f]=inp.value;save(a);render();}});});
+   b.querySelectorAll("button[data-del]").forEach(function(btn){btn.addEventListener("click",function(){save(load().filter(function(x){return x.code!==btn.getAttribute("data-del");}));render();});});
+ }
+ function ensurePrices(){
+   if(typeof fetchLiveOne!=="function"||typeof inCowork!=="function"||!inCowork())return;
+   load().forEach(function(it){if(!price(it.code)){try{fetchLiveOne(it.code).then(function(){render();}).catch(function(){});}catch(e){}}});
+ }
+ function add(){var inp=document.getElementById("wlq");if(!inp)return;var r=resolve(inp.value);if(!r){inp.value="";return;}var a=load();if(!a.find(function(x){return x.code===r.code;}))a.push({code:r.code,name:r.name,avg:"",qty:""});save(a);inp.value="";render();ensurePrices();}
+ function init(){card();render();ensurePrices();var ad=document.getElementById("wladd");if(ad)ad.addEventListener("click",add);var q=document.getElementById("wlq");if(q)q.addEventListener("keydown",function(e){if(e.key==="Enter")add();});}
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+ window.addEventListener("load",function(){if(!document.getElementById("watchcard"))init();else{try{ensurePrices();}catch(e){}}});
+})();
+</script>
 </body>
 </html>
