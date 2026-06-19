@@ -990,5 +990,37 @@ loadContent();
  window.addEventListener("load",function(){top();setTimeout(top,150);setTimeout(top,500);setTimeout(top,900);});
 })();
 </script>
+<style>
+/* === 레이아웃·디자인 폴리시 (덧입힘) === */
+body{background:linear-gradient(180deg,#eaeef5 0,#f5f6f8 260px)}
+.card{transition:box-shadow .15s ease,transform .15s ease}
+.card:hover{box-shadow:0 2px 6px rgba(20,25,40,.08),0 12px 30px rgba(20,25,40,.10);transform:translateY(-1px)}
+.card h2{border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:8px}
+.topbar h1{letter-spacing:-.3px}
+@media(min-width:960px){
+  .wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  .wrap>*{grid-column:1 / -1}                 /* 기본: 전체폭 */
+  .wrap>#globalcard,.wrap>#sentcard,.wrap>#heatcard,.wrap>#watchcard{grid-column:auto}  /* 기능 카드만 2열 */
+  .wrap>.card{margin-bottom:0}
+  .grid2{grid-template-columns:1fr 1fr}       /* 분석 페어 2열 복원 */
+}
+@media(min-width:1280px){ .wrap{max-width:1320px} }
+</style>
+<script>
+/* 새 기능 카드(상단바 안에 삽입된 것)를 .wrap 직속으로 옮겨 2열 그리드에 태우기 */
+(function(){
+ function relocate(){
+   var wrap=document.querySelector(".wrap"), tb=document.querySelector(".topbar");
+   if(!wrap||!tb) return;
+   var anchor=tb;
+   ["globalcard","sentcard","heatcard","watchcard"].forEach(function(id){
+     var el=document.getElementById(id);
+     if(el){ wrap.insertBefore(el, anchor.nextSibling); anchor=el; }
+   });
+ }
+ window.addEventListener("load",function(){ relocate(); setTimeout(relocate,600); setTimeout(relocate,1200); });
+ if(document.readyState!=="loading") setTimeout(relocate,1500);
+})();
+</script>
 </body>
 </html>
