@@ -861,6 +861,8 @@ loadContent();
 /* === 관심종목·포트폴리오 모듈 (localStorage) === */
 (function(){
  var KEY="wl_v2";
+ var DEF=[{"c":"034730","n":"SK"},{"c":"093370","n":"후성"},{"c":"080220","n":"제주반도체"},{"c":"279570","n":"케이뱅크"},{"c":"403870","n":"HPSP"},{"c":"353200","n":"대덕전자"},{"c":"062040","n":"산일전기"},{"c":"267260","n":"HD현대일렉트릭"},{"c":"006220","n":"제주은행"},{"c":"103590","n":"일진전기"},{"c":"009150","n":"삼성전기"},{"c":"095610","n":"테스"},{"c":"089030","n":"테크윙"},{"c":"011790","n":"SKC"},{"c":"036930","n":"주성엔지니어링"},{"c":"032820","n":"우리기술"},{"c":"307950","n":"현대오토에버"},{"c":"005380","n":"현대차"},{"c":"042700","n":"한미반도체"},{"c":"028260","n":"삼성물산"},{"c":"402340","n":"SK스퀘어"}];
+ function seed(){try{if(localStorage.getItem(KEY+"_seed"))return;}catch(e){}if(!load().length){save(DEF.map(function(d){return {code:d.c,name:d.n,avg:"",qty:""};}));}try{localStorage.setItem(KEY+"_seed","1");}catch(e){}}
  function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){return [];}}
  function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
  function E(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
@@ -899,19 +901,20 @@ loadContent();
      var cls=rt>0?"up":(rt<0?"down":"flat"), ar=rt>0?"▲":(rt<0?"▼":"-");
      var avg=parseFloat(it.avg)||0, qty=parseFloat(it.qty)||0, pl="", plr="";
      if(pr&&avg>0&&qty>0){var val=pr*qty,buy=avg*qty,d=val-buy,r=d/buy*100;tBuy+=buy;tVal+=val;have=true;var pc=d>=0?"up":"down";pl='<span class="'+pc+'">'+(d>=0?"+":"")+fmt(d)+'</span>';plr='<span class="'+pc+'">'+(d>=0?"+":"")+r.toFixed(2)+'%</span>';}
-     rows+='<tr style="text-align:right;border-top:1px solid #eee"><td style="text-align:left;padding:6px 4px"><b>'+E(it.name)+'</b> <span style="color:#aaa;font-size:11px">'+E(it.code)+'</span></td><td>'+(pr?fmt(pr)+'원':'<span style="color:#bbb">-</span>')+'</td><td class="'+cls+'">'+(rt!=null?ar+Math.abs(rt).toFixed(2)+'%':'-')+'</td><td><input data-c="'+it.code+'" data-f="avg" value="'+E(it.avg||"")+'" inputmode="decimal" style="width:74px;text-align:right" placeholder="평단"></td><td><input data-c="'+it.code+'" data-f="qty" value="'+E(it.qty||"")+'" inputmode="decimal" style="width:54px;text-align:right" placeholder="수량"></td><td>'+(pl||'<span style="color:#bbb">-</span>')+'</td><td>'+(plr||'<span style="color:#bbb">-</span>')+'</td><td><button data-del="'+it.code+'" title="삭제" style="border:none;background:none;cursor:pointer;color:#c33">✕</button></td></tr>';
+     rows+='<tr style="text-align:right;border-top:1px solid #eee"><td style="text-align:left;padding:6px 4px"><b><a href="#" class="wlgo" data-go="'+it.code+'" style="color:#3b5bdb;text-decoration:none">'+E(it.name)+'</a></b> <span style="color:#aaa;font-size:11px">'+E(it.code)+'</span></td><td>'+(pr?fmt(pr)+'원':'<span style="color:#bbb">-</span>')+'</td><td class="'+cls+'">'+(rt!=null?ar+Math.abs(rt).toFixed(2)+'%':'-')+'</td><td><input data-c="'+it.code+'" data-f="avg" value="'+E(it.avg||"")+'" inputmode="decimal" style="width:74px;text-align:right" placeholder="평단"></td><td><input data-c="'+it.code+'" data-f="qty" value="'+E(it.qty||"")+'" inputmode="decimal" style="width:54px;text-align:right" placeholder="수량"></td><td>'+(pl||'<span style="color:#bbb">-</span>')+'</td><td>'+(plr||'<span style="color:#bbb">-</span>')+'</td><td><button data-del="'+it.code+'" title="삭제" style="border:none;background:none;cursor:pointer;color:#c33">✕</button></td></tr>';
    });
    rows+='</tbody></table>'; b.innerHTML=rows;
    if(tot){if(have){var d=tVal-tBuy,r=tBuy?d/tBuy*100:0;tot.innerHTML='총 평가손익 <b class="'+(d>=0?"up":"down")+'">'+(d>=0?"+":"")+fmt(d)+'원 ('+(d>=0?"+":"")+r.toFixed(2)+'%)</b> · 매입 '+fmt(tBuy)+' → 평가 '+fmt(tVal);}else tot.textContent="평단가·수량을 입력하면 수익률이 계산됩니다.";}
    b.querySelectorAll("input[data-c]").forEach(function(inp){inp.addEventListener("change",function(){var c=inp.getAttribute("data-c"),f=inp.getAttribute("data-f"),a=load(),it=a.find(function(x){return x.code===c;});if(it){it[f]=inp.value;save(a);render();}});});
    b.querySelectorAll("button[data-del]").forEach(function(btn){btn.addEventListener("click",function(){save(load().filter(function(x){return x.code!==btn.getAttribute("data-del");}));render();});});
+   b.querySelectorAll("a.wlgo").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();try{document.getElementById("q").value=a.getAttribute("data-go");if(typeof doLookup==="function")doLookup();}catch(err){}});});
  }
  function ensurePrices(){
    if(typeof fetchLiveOne!=="function"||typeof inCowork!=="function"||!inCowork())return;
    load().forEach(function(it){if(!price(it.code)){try{fetchLiveOne(it.code).then(function(){render();}).catch(function(){});}catch(e){}}});
  }
  function add(){var inp=document.getElementById("wlq");if(!inp)return;var r=resolve(inp.value);if(!r){inp.value="";return;}var a=load();if(!a.find(function(x){return x.code===r.code;}))a.push({code:r.code,name:r.name,avg:"",qty:""});save(a);inp.value="";render();ensurePrices();}
- function init(){card();render();ensurePrices();var ad=document.getElementById("wladd");if(ad)ad.addEventListener("click",add);var q=document.getElementById("wlq");if(q)q.addEventListener("keydown",function(e){if(e.key==="Enter")add();});}
+ function init(){card();seed();render();ensurePrices();var ad=document.getElementById("wladd");if(ad)ad.addEventListener("click",add);var q=document.getElementById("wlq");if(q)q.addEventListener("keydown",function(e){if(e.key==="Enter")add();});}
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
  window.addEventListener("load",function(){if(!document.getElementById("watchcard"))init();else{try{ensurePrices();}catch(e){}}});
 })();
