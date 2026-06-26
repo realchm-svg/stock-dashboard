@@ -914,9 +914,10 @@ loadContent();
    load().forEach(function(it){if(!price(it.code)){try{fetchLiveOne(it.code).then(function(){render();}).catch(function(){});}catch(e){}}});
  }
  function add(){var inp=document.getElementById("wlq");if(!inp)return;var r=resolve(inp.value);if(!r){inp.value="";return;}var a=load();if(!a.find(function(x){return x.code===r.code;}))a.push({code:r.code,name:r.name,avg:"",qty:""});save(a);inp.value="";render();ensurePrices();}
- function init(){card();seed();render();ensurePrices();var ad=document.getElementById("wladd");if(ad)ad.addEventListener("click",add);var q=document.getElementById("wlq");if(q)q.addEventListener("keydown",function(e){if(e.key==="Enter")add();});}
+ var wt=0;function wtick(){var ae=document.activeElement;var typing=ae&&ae.tagName==="INPUT"&&ae.closest&&ae.closest("#watchcard");if(!typing){render();}wt++;if(wt<16)setTimeout(wtick,3000);}
+function init(){card();seed();ensurePrices();wtick();var ad=document.getElementById("wladd");if(ad)ad.addEventListener("click",add);var q=document.getElementById("wlq");if(q)q.addEventListener("keydown",function(e){if(e.key==="Enter")add();});}
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
- window.addEventListener("load",function(){if(!document.getElementById("watchcard"))init();else{try{ensurePrices();}catch(e){}}});
+ window.addEventListener("load",function(){if(!document.getElementById("watchcard"))init();else{try{ensurePrices();}catch(e){}try{wtick();}catch(e){}}});
 })();
 </script>
 <script>
