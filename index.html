@@ -862,7 +862,7 @@ loadContent();
 (function(){
  var KEY="wl_v2";
  var DEF=[{"c":"034730","n":"SK"},{"c":"093370","n":"후성"},{"c":"080220","n":"제주반도체"},{"c":"279570","n":"케이뱅크"},{"c":"403870","n":"HPSP"},{"c":"353200","n":"대덕전자"},{"c":"062040","n":"산일전기"},{"c":"267260","n":"HD현대일렉트릭"},{"c":"006220","n":"제주은행"},{"c":"103590","n":"일진전기"},{"c":"009150","n":"삼성전기"},{"c":"095610","n":"테스"},{"c":"089030","n":"테크윙"},{"c":"011790","n":"SKC"},{"c":"036930","n":"주성엔지니어링"},{"c":"032820","n":"우리기술"},{"c":"307950","n":"현대오토에버"},{"c":"005380","n":"현대차"},{"c":"042700","n":"한미반도체"},{"c":"028260","n":"삼성물산"},{"c":"402340","n":"SK스퀘어"}];
- function seed(){try{if(localStorage.getItem(KEY+"_seed"))return;}catch(e){}if(!load().length){save(DEF.map(function(d){return {code:d.c,name:d.n,avg:"",qty:""};}));}try{localStorage.setItem(KEY+"_seed","1");}catch(e){}}
+ function seed(){try{if(localStorage.getItem(KEY+"_seed2"))return;}catch(e){}var a=load(),have={};a.forEach(function(x){have[x.code]=1;});DEF.forEach(function(d){if(!have[d.c])a.push({code:d.c,name:d.n,avg:"",qty:""});});save(a);try{localStorage.setItem(KEY+"_seed2","1");}catch(e){}}
  function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){return [];}}
  function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
  function E(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
