@@ -62,9 +62,17 @@ jobs:
             console.log('유효성 통과:', d.updated, d.stocks.length + '종목');
           "
 
+      # 공유 미리보기 카드(og-image.png). 실패해도 본 갱신을 막지 않는다.
+      - name: 공유 미리보기 카드 생성
+        continue-on-error: true
+        run: |
+          npm i --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+          node make-og.js
+
       - name: 변경분 커밋·푸시
         run: |
-          if git diff --quiet -- content.json; then
+          if git diff --quiet -- content.json og-image.png; then
             echo "변경 없음 — 커밋 생략"
             exit 0
           fi
@@ -72,6 +80,6 @@ jobs:
           git config user.email "realchm@users.noreply.github.com"
           SUFFIX=""
           if [ "${{ steps.sess.outputs.value }}" = "close" ]; then SUFFIX=" (마감)"; fi
-          git add content.json
+          git add content.json og-image.png
           git commit -m "auto: 고품질 분석 갱신 $(TZ=Asia/Seoul date +%F)${SUFFIX}"
           git push
