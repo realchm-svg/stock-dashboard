@@ -1,0 +1,77 @@
+name: 대시보드 자동 갱신
+
+on:
+  schedule:
+    # 평일 08:05 KST (전일 23:05 UTC) — 장 시작 전
+    - cron: "5 23 * * 0-4"
+    # 평일 16:10 KST (07:10 UTC) — 장 마감 후
+    - cron: "10 7 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      session:
+        description: "open(장 시작 전) 또는 close(마감 후)"
+        required: false
+        default: "close"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: content-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 세션 구분 결정
+        id: sess
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            if [ "${{ github.event.schedule }}" = "5 23 * * 0-4" ]; then
+              echo "value=open" >> $GITHUB_OUTPUT
+            else
+              echo "value=close" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "value=${{ inputs.session || 'close' }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: content.json 갱신
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SESSION: ${{ steps.sess.outputs.value }}
+        run: node build-content.js
+
+      - name: JSON 유효성 최종 확인
+        run: |
+          node -e "
+            const d = JSON.parse(require('fs').readFileSync('content.json','utf8'));
+            const need = ['updated','brief','scenarios','consensusTxt','monitor','globalNote','aiRows','stocks','watch'];
+            const missing = need.filter(k => !(k in d));
+            if (missing.length) { console.error('누락된 키:', missing); process.exit(1); }
+            if (!Array.isArray(d.stocks) || d.stocks.length < 16) { console.error('stocks 부족'); process.exit(1); }
+            const bad = d.stocks.filter(s => String(s.code).length !== 6);
+            if (bad.length) { console.error('잘못된 종목코드:', bad.map(s => s.code)); process.exit(1); }
+            console.log('유효성 통과:', d.updated, d.stocks.length + '종목');
+          "
+
+      - name: 변경분 커밋·푸시
+        run: |
+          if git diff --quiet -- content.json; then
+            echo "변경 없음 — 커밋 생략"
+            exit 0
+          fi
+          git config user.name "cowork-bot"
+          git config user.email "realchm@users.noreply.github.com"
+          SUFFIX=""
+          if [ "${{ steps.sess.outputs.value }}" = "close" ]; then SUFFIX=" (마감)"; fi
+          git add content.json
+          git commit -m "auto: 고품질 분석 갱신 $(TZ=Asia/Seoul date +%F)${SUFFIX}"
+          git push
