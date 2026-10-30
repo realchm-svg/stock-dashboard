@@ -6,14 +6,14 @@
 
 <!-- 공유·검색 -->
 <title>국내증시 대시보드 · 오늘의 한국 주식시장 한눈에</title>
-<meta name="description" content="코스피·원달러 환율·업종 흐름과 AI 4곳이 정리한 오늘의 국내 증시를 한 화면에 모았습니다. 매수·매도를 권유하지 않는 정보 정리 도구입니다.">
+<meta name="description" content="코스피·원달러 환율·업종 흐름과 AI가 정리한 오늘의 국내 증시를 한 화면에 모았습니다. 매수·매도를 권유하지 않는 정보 정리 도구입니다.">
 <link rel="canonical" href="https://realchm-svg.github.io/stock-dashboard/">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="국내증시 대시보드">
 <meta property="og:locale" content="ko_KR">
 <meta property="og:title" content="국내증시 대시보드 · 오늘의 한국 주식시장 한눈에">
-<meta property="og:description" content="코스피·환율·업종 흐름과 AI 4곳이 정리한 오늘의 국내 증시를 한 화면에. 매수·매도를 권유하지 않는 정보 정리 도구입니다.">
+<meta property="og:description" content="코스피·환율·업종 흐름과 AI가 정리한 오늘의 국내 증시를 한 화면에. 매수·매도를 권유하지 않는 정보 정리 도구입니다.">
 <meta property="og:url" content="https://realchm-svg.github.io/stock-dashboard/">
 <meta property="og:image" content="https://realchm-svg.github.io/stock-dashboard/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -21,7 +21,7 @@
 <meta property="og:image:alt" content="국내증시 대시보드 미리보기 — 코스피·환율·업종 흐름 요약 화면">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="국내증시 대시보드 · 오늘의 한국 주식시장 한눈에">
-<meta name="twitter:description" content="코스피·환율·업종 흐름과 AI 4곳이 정리한 오늘의 국내 증시를 한 화면에. 정보 정리 도구이며 투자 자문이 아닙니다.">
+<meta name="twitter:description" content="코스피·환율·업종 흐름과 AI가 정리한 오늘의 국내 증시를 한 화면에. 정보 정리 도구이며 투자 자문이 아닙니다.">
 <meta name="twitter:image" content="https://realchm-svg.github.io/stock-dashboard/og-image.png">
 
 <!-- 브라우저 UI -->
@@ -50,6 +50,7 @@
   --fs-md:17px;    /* 카드 제목 */
   --fs-lg:20px;    /* 페이지 제목·종목명 */
   --fs-xl:26px;    /* 히어로 수치 */
+  --fs-title:22px; /* 페이지 제목 — 섹션 제목(20px)과 구분되는 단계가 필요했다 */
   --lh-tight:1.35;
   --lh-body:1.6;
   --lh-long:1.7;   /* 한글 장문 */
@@ -181,7 +182,7 @@ img,canvas,svg,video{max-width:100%;height:auto}
 .topbar{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
   box-shadow:var(--shadow);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-4)}
 .topbar .title{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
-.title h1{font-size:var(--fs-lg)}
+.title h1{font-size:var(--fs-title);letter-spacing:-.3px}
 .badge{font-size:var(--fs-xs);font-weight:700;padding:4px 10px;border-radius:var(--radius-pill);
   background:var(--soft-amber-bg);color:var(--soft-amber-ink);border:1px solid var(--soft-amber-line);
   white-space:nowrap;max-width:100%;overflow-wrap:anywhere}
@@ -370,10 +371,9 @@ img,canvas,svg,video{max-width:100%;height:auto}
   transition:border-color .1s ease,background .1s ease;min-width:0;min-height:var(--tap);
   text-align:left;background:var(--card);color:inherit;width:100%;font:inherit}
 .rrow:hover{border-color:var(--accent);background:var(--accent-soft)}
-.rlite{flex:none;width:12px;height:12px;border-radius:50%;background:var(--grey);box-shadow:0 0 0 3px var(--soft-neutral-bg)}
-.rlite.lab-g{background:var(--green);box-shadow:0 0 0 3px var(--soft-green-bg)}
-.rlite.lab-y{background:var(--amber);box-shadow:0 0 0 3px var(--soft-amber-bg)}
-.rlite.lab-r{background:var(--sig-danger);box-shadow:0 0 0 3px var(--soft-red-bg)}
+/* 녹색 '관심'이 파란 ▼ 옆에, 주황 '주의'가 빨간 ▲ 옆에 붙어 뜻이 헷갈렸다 —
+   색은 등락에만 쓰고 신호등은 글자로만 말한다 */
+.rlite{display:none}
 /* .rrow 는 <button> 이므로 내부가 <span> 이다 — 줄 단위 배치를 위해 block 을 명시한다
    (button 의 콘텐츠 모델은 phrasing content 라 div 를 넣지 않는다). */
 .rmain{display:block;flex:1 1 auto;min-width:0}
@@ -387,7 +387,8 @@ img,canvas,svg,video{max-width:100%;height:auto}
 .rsec{font-size:var(--fs-xs);color:var(--grey);display:block;margin-top:2px;overflow-wrap:anywhere}
 .rright,.livep,.tick .v,.tick .c,.wltable td,.wltable th,.gtable td,.aicmp td,.gnum,.mon .m .v{font-variant-numeric:tabular-nums}
 /* 신호등을 색·이모지에만 싣지 않는다 — 종목명 줄에 낱말을 함께 적는다(줄이 늘지 않는다) */
-.rlab{font-weight:600;font-size:var(--fs-xs);margin-left:var(--sp-1);white-space:nowrap}
+.rlab{font-weight:600;font-size:var(--fs-xs);margin-left:var(--sp-1);white-space:nowrap;
+  color:var(--muted);border:1px solid var(--line);border-radius:var(--radius-sm);padding:1px 6px}
 .rlab.lab-g{color:var(--soft-green-ink)}
 .rlab.lab-y{color:var(--soft-amber-ink)}
 .rlab.lab-r{color:var(--sig-danger)}
@@ -543,7 +544,7 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
   .card{padding:var(--sp-3);border-radius:12px;margin-bottom:var(--sp-3)}
   .topbar{padding:var(--sp-3);border-radius:12px}
   .ticks{grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px}
-  .title h1{font-size:var(--fs-lg)}
+  /* 페이지 제목은 좁은 화면에서도 섹션 제목(20px)보다 커야 위계가 산다 */
   .lookbar{gap:6px}
   .lookbar input{flex:1 1 100%}
   .lookbar button{flex:1 1 auto}
@@ -608,7 +609,6 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
   <header class="topbar">
     <div class="title">
       <h1>국내증시 대시보드</h1>
-      <span class="badge">정보 도구 · 투자자문 아님</span>
       <span class="badge" id="modebadge" style="background:#eef1fe;color:#3b3a86;border-color:#d9e0fb"></span>
     </div>
     <!-- 상태줄: 이 화면이 언제 기준이고 지금 정상인가 -->
@@ -633,25 +633,24 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
 
   <!-- 1. 오늘 시장 — 오늘 한국 시장은 어느 쪽이었고, 얼마나 움직였나 -->
   <section class="card" id="sec-today" aria-labelledby="h-today">
-    <h2 id="h-today"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>오늘 시장</h2>
+    <h2 id="h-today">오늘 시장</h2>
     <div class="sub">오늘 한국 시장이 어느 쪽으로 얼마나 움직였는지부터 봅니다.</div>
     <p class="herolead heroloading" id="sumhero">오늘 시장을 불러오는 중입니다…</p>
     <p class="herometa" id="summeta">시세 확인 중…</p>
     <div class="ticks" id="ticks"></div>
-    <p class="sumdelay">시세는 약 20분 늦게 표시됩니다. 참고용 정보이며 매수·매도 권유가 아닙니다.</p>
     <p class="sumbrief" id="sumbrief" hidden></p>
     <div class="summine" id="summine" hidden></div>
   </section>
 
   <!-- 2. 왜 그렇게 움직였나 — 오늘 이 움직임을 만든 일이 무엇인가 -->
   <section class="card" id="sec-why" aria-labelledby="h-why">
-    <h2 id="h-why"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>왜 그렇게 움직였나</h2>
+    <h2 id="h-why">왜 그렇게 움직였나</h2>
     <div class="sub">오늘의 움직임을 만든 일들을 짧게 정리했습니다.</div>
     <ul class="brief" id="brief"></ul>
     <details class="note">
       <summary>이 정리는 어떻게 만들었나 — AI 여러 곳의 관점을 모아 정리했습니다</summary>
       <div class="dbody">
-        <p>같은 하루를 AI 네 곳이 각각 다른 역할로 읽습니다. 한 곳은 사실을 모으고, 한 곳은 이유를 따져 보고, 한 곳은 반대 근거를 찾고, 한 곳은 앞의 셋을 다시 확인합니다.</p>
+        <p>같은 하루를 AI가 네 가지 역할로 나눠 읽습니다. 한 번은 사실을 모으고, 한 번은 이유를 따져 보고, 한 번은 반대 근거를 찾고, 한 번은 앞의 셋을 다시 확인합니다. <b>서로 다른 회사의 AI 네 개가 아니라, 한 AI가 네 번 다른 각도로 본 것입니다.</b></p>
         <p>그렇게 모은 이야기를 짧은 문장으로 줄인 것이 위 목록입니다. 화면에서 그때그때 물어볼 수 있는 AI는 Claude 한 곳입니다.</p>
         <p>모두 공개된 보도와 리포트를 요약한 것입니다. 사실 확인을 대신하지 않으며, 매수·매도 권유가 아닙니다.</p>
       </div>
@@ -704,9 +703,9 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
 
   <!-- 6. AI가 오늘 자주 짚은 종목 20 (구 ④ + ⑤ 통합) -->
   <section class="card" id="sec-picks" aria-labelledby="h-picks">
-    <h2 id="h-picks"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>AI가 오늘 자주 짚은 종목 20</h2>
-    <div class="sub">AI 4곳이 오늘 이름을 자주 꺼낸 순서입니다. <b>사라는 뜻도, 팔라는 뜻도 아닙니다.</b></div>
-    <p class="termnote"><b>‘근거 확실 · 근거 보통 · 근거 약함’</b>은 그렇게 본 자료가 얼마나 뚜렷한지를 뜻합니다. AI 4곳의 찬반 투표 결과가 아닙니다.</p>
+    <h2 id="h-picks">AI가 오늘 자주 짚은 종목 20</h2>
+    <div class="sub">AI가 오늘 이름을 자주 꺼낸 순서입니다. <b>사라는 뜻도, 팔라는 뜻도 아닙니다.</b></div>
+    <p class="termnote"><b>‘자료 많음 · 자료 보통 · 자료 적음’</b>은 그렇게 볼 근거 자료가 얼마나 모였는지만 뜻합니다. 얼마나 오를지와는 관계가 없고, AI의 찬반 투표 결과도 아닙니다.</p>
     <div class="picksgrid">
       <div class="pickcol">
         <h3><span class="dot" aria-hidden="true" style="background:var(--green)"></span>AI가 눈여겨본 10곳</h3>
@@ -723,7 +722,7 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
       <summary>두 묶음은 어떻게 나눴나 — 회사의 좋고 나쁨을 판정한 것이 아닙니다</summary>
       <div class="dbody">
         <p>한 줄에 <b>숫자가 두 개</b> 보일 수 있습니다. 설명 속 등락률은 분석을 만든 시점(대개 어제 마감) 기준이고, 오른쪽 끝 숫자가 지금(약 20분 늦은) 값입니다. 두 값이 달라도 잘못된 것이 아닙니다.</p>
-        <p>AI 4곳이 오늘 모은 공개 보도와 증권사 리포트에서, 어느 쪽 이야기가 더 많았는지로 나눈 것입니다. 회사의 좋고 나쁨을 판정한 것이 아닙니다.</p>
+        <p>AI가 오늘 모은 공개 보도와 증권사 리포트에서, 어느 쪽 이야기가 더 많았는지로 나눈 것입니다. 회사의 좋고 나쁨을 판정한 것이 아닙니다.</p>
         <p>‘조심스럽게 본 10곳’에 있다고 해서 나쁜 회사라는 뜻이 아니고, ‘눈여겨본 10곳’에 있다고 해서 오른다는 뜻도 아닙니다. 오늘 어떤 이야기가 돌았는지를 보여줄 뿐입니다.</p>
         <p>확신도는 그 이야기를 받쳐 주는 자료가 얼마나 뚜렷한지를 네 단계로 환산한 값입니다. 종목을 눌러 자세히 보면 ‘확신도 상·중·하’로 표시됩니다.</p>
         <p>어느 쪽에 있든 특정 종목의 매수·매도를 권유하지 않습니다. 실제로 사고팔기 전에는 거래소(KRX)에서 숫자를 다시 확인해 주세요.</p>
@@ -733,7 +732,7 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
 
   <!-- 7. 앞으로 1~6개월 (구 ② + 구 ⑧ 모니터링을 하위로) -->
   <section class="card" id="sec-outlook" aria-labelledby="h-outlook">
-    <h2 id="h-outlook"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>앞으로 1~6개월, 세 가지 그림</h2>
+    <h2 id="h-outlook">앞으로 1~6개월, 세 가지 그림</h2>
     <div class="sub">좋을 때·보통일 때·나쁠 때를 각각 가정해 본 것입니다. <b>예언이 아닙니다.</b></div>
     <div class="scn" id="scenarios"></div>
 
@@ -744,22 +743,22 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
     </div>
   </section>
 
-  <!-- 8. AI 4곳은 뭐라고 했나 (결론 먼저, 근거 나중) -->
+  <!-- 8. AI가 네 관점으로 본 결과 (결론 먼저, 근거 나중) -->
   <section class="card aicmp" id="sec-ai" aria-labelledby="h-ai">
-    <h2 id="h-ai"><span class="dot" aria-hidden="true" style="background:var(--amber)"></span>AI 4곳은 뭐라고 했나</h2>
-    <div class="sub">같은 질문에 AI 4곳이 어떻게 답했는지 모았습니다. <b>넷이 같다고 해서 맞다는 보증은 아닙니다.</b></div>
+    <h2 id="h-ai"><span class="dot" aria-hidden="true" style="background:var(--amber)"></span>AI가 네 관점으로 본 결과</h2>
+    <div class="sub">같은 하루를 <b>AI 한 곳이 네 가지 역할로 나눠</b> 읽은 결과입니다. 네 칸이 같은 말을 한다고 해서 맞다는 보증은 아닙니다.</div>
     <div class="consensus-row" id="consensus"></div>
     <details class="note">
-      <summary>AI 네 곳이 각각 어떤 역할을 맡았고, 무엇이라고 했나</summary>
+      <summary>네 가지 역할이 각각 무엇을 보고, 무엇이라고 했나</summary>
       <div class="dbody">
-        <table><caption class="sr-only">AI 4곳의 역할별 결론과 판정 비교</caption><thead><tr><th scope="col">AI / 역할</th><th scope="col">결론</th><th scope="col">판정</th></tr></thead><tbody id="aibody"></tbody></table>
+        <table><caption class="sr-only">네 가지 역할별 결론과 판정 비교</caption><thead><tr><th scope="col">AI / 역할</th><th scope="col">결론</th><th scope="col">판정</th></tr></thead><tbody id="aibody"></tbody></table>
       </div>
     </details>
   </section>
 
   <!-- 9. 성향별 배분 예시 (기본 접힘) -->
   <section class="card" id="sec-guide" aria-labelledby="h-guide">
-    <h2 id="h-guide"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>성향별 배분 예시</h2>
+    <h2 id="h-guide">성향별 배분 예시</h2>
     <div class="sub">널리 알려진 배분 방식을 예시로 정리한 것입니다. <b>특정 개인에게 맞는 배분이 아닙니다.</b></div>
     <p class="termnote">아래 숫자는 <b>‘이렇게 하라’는 지침이 아니라 ‘이런 방식이 흔히 쓰인다’는 설명</b>입니다. 특정 매매 규칙을 권하지 않습니다.</p>
     <details class="note" id="dt-guide">
@@ -778,12 +777,12 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
     <h2 id="h-about"><span class="dot" aria-hidden="true" style="background:var(--grey)"></span>이 화면 읽는 법 · 고지</h2>
     <div class="sub">그대로 따라 해도 되는지에 대한 답입니다. (답은 ‘아니오’입니다.)</div>
     <div class="disc">
-      <p class="disc-lead"><b>이 화면은 여러 AI의 분석을 비교해 정리한 정보 도구이며, 투자 자문이 아닙니다.</b> 특정 종목을 사라거나 팔라고 권하지 않습니다.</p>
+      <p class="disc-lead"><b>이 화면은 AI가 공개 보도·리포트를 정리한 정보 도구이며, 투자 자문이 아닙니다.</b> 특정 종목을 사라거나 팔라고 권하지 않습니다.</p>
       <details class="note">
         <summary>면책 고지 전문 — 투자한 원금을 잃을 수 있습니다</summary>
         <div class="dbody">
           <p><b>이 도구를 만든 사람은 투자자문업·유사투자자문업으로 등록하거나 신고한 사업자가 아닙니다. 주식 투자는 원금을 잃을 수 있습니다.</b></p>
-          <p>‘관심 / 주의’ 분류와 확신도 표시는 정보를 정리하기 위한 표시입니다. AI 4곳이 실제로 동시에 투표한 결과가 아닙니다.</p>
+          <p>‘관심 / 주의’ 분류와 확신도 표시는 정보를 정리하기 위한 표시입니다. AI가 실제로 투표한 결과가 아닙니다.</p>
           <p>목록과 신호등은 공개된 보도·리포트를 근거로 정리한 것입니다. AI는 틀린 내용이나 없는 사실을 지어낼 수 있고, 과거의 흐름이 앞으로를 보장하지 않습니다.</p>
           <p>종목코드와 숫자는 사고팔기 전에 거래소(KRX)에서 다시 확인해 주세요. 모든 투자 판단과 그 결과에 대한 책임은 이용자 본인에게 있습니다.</p>
           <p>시세는 구글 파이낸스에서 약 20분 늦게 받아온 값이며, 코스닥 일부 종목은 제공되지 않습니다.</p>
@@ -805,7 +804,7 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
           <dt>시가총액</dt><dd>그 회사 주식 전부의 값을 합친 금액입니다. 회사의 덩치를 견줄 때 씁니다.</dd>
           <dt>상장</dt><dd>회사 주식을 누구나 시장에서 사고팔 수 있게 등록한 것입니다.</dd>
           <dt>이동평균</dt><dd>최근 며칠치 가격의 평균을 이어 그린 선입니다. 하루하루의 출렁임을 걷어내고 흐름만 보려고 씁니다.</dd>
-          <dt>확신도</dt><dd>그렇게 본 근거 자료가 얼마나 뚜렷한지입니다. 얼마나 많이 오를지와는 관계가 없고, AI의 찬반 투표 결과도 아닙니다.</dd>
+          <dt>자료 많음 · 보통 · 적음</dt><dd>그렇게 볼 근거 자료가 얼마나 모였는지입니다. 얼마나 많이 오를지와는 관계가 없고, AI의 찬반 투표 결과도 아닙니다.</dd>
           <dt>신호등</dt><dd>이 화면이 종목을 세 갈래로 나눠 표시한 것입니다. 관심 · 보통 · 주의이며, 매수·매도 신호가 아닙니다.</dd>
           <dt>손실 한도(손절)</dt><dd>‘여기까지 내려가면 그만두겠다’고 미리 정해 두는 선입니다. 이 화면은 그 값을 정해 주지 않습니다.</dd>
         </dl>
@@ -820,10 +819,66 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
 /* 값은 실제 데이터가 도착했을 때만 채운다(하드코딩 스냅샷을 현재값으로 보여주지 않는다).
    KOSPI·USDKRW는 loadMacro(), BREADTH는 상단 요약 스크립트가 채운다. */
 const ticks=[
-  {k:"코스피",v:"—",c:"확인 중…",dir:"flat",key:"KOSPI"},
+  /* 코스피 수치는 바로 위 헤드라인이 이미 크게 말한다 — 이 칸은 분위기 점수를 맡는다 */
+  {k:"오늘 분위기",v:"—",c:"시세 확인 중…",dir:"flat",key:"MOOD"},
   {k:"원/달러 환율",v:"—",c:"확인 중…",dir:"flat",key:"USDKRW"},
   {k:"오늘 오른 종목",v:"—",c:"시세 확인 중…",dir:"flat",key:"BREADTH"}
 ];
+/* 오늘 장세에 맞는 시나리오를 펼친다 — 지수가 3% 넘게 빠진 날 '오를 때의 그림'이
+   먼저 열려 있으면 화면을 믿기 어려워진다. 시세를 모르면 '중립'을 연다. */
+function scnTone(){
+  try{
+    const k = window.__macro && window.__macro.KOSPI;
+    const r = (k && typeof k.rate === "number" && isFinite(k.rate)) ? k.rate : null;
+    if(r === null) return "p-base";
+    if(r <= -0.8) return "p-bear";
+    if(r >= 0.8) return "p-bull";
+    return "p-base";
+  }catch(e){ return "p-base"; }
+}
+function scnOpenIdx(list){
+  const a = Array.isArray(list) ? list : [];
+  const t = scnTone();
+  const hit = a.findIndex(x => x && x.p === t);
+  if(hit >= 0) return hit;
+  const base = a.findIndex(x => x && x.p === "p-base");
+  return base >= 0 ? base : 0;
+}
+/* 시세는 본문보다 늦게 도착할 수 있다 — 도착하면 한 번만 다시 맞춘다 */
+let scnSynced = false;
+function syncScenarioOpen(){
+  if(scnSynced) return;
+  const box = $("scenarios"); if(!box) return;
+  const rows = box.querySelectorAll("details.row"); if(!rows.length) return;
+  if(scnTone() === "p-base" && !(window.__macro && window.__macro.KOSPI)) return;
+  const t = scnTone();
+  let hit = -1;
+  rows.forEach((d,i)=>{ const p=d.querySelector(".p"); if(p && p.className.indexOf(t)>=0) hit=i; });
+  if(hit < 0) return;
+  rows.forEach((d,i)=>{ d.open = (i===hit); });
+  scnSynced = true;
+}
+
+/* 인쇄 CSS(details>*{display:block})만으로는 닫힌 항목 본문이 종이에 나오지 않았다(코덱스 재현).
+   인쇄 직전에 열고 끝나면 원래대로 되돌린다. */
+(function(){
+  let reopened=null;
+  function openAll(){
+    reopened=[];
+    document.querySelectorAll("details").forEach(function(d){ if(!d.open){ reopened.push(d); d.open=true; } });
+  }
+  function restore(){ if(reopened){ reopened.forEach(function(d){ d.open=false; }); reopened=null; } }
+  try{
+    window.addEventListener("beforeprint", openAll);
+    window.addEventListener("afterprint", restore);
+    if(window.matchMedia){
+      const mq=window.matchMedia("print");
+      const on=function(e){ if(e.matches) openAll(); else restore(); };
+      if(mq.addEventListener) mq.addEventListener("change", on); else if(mq.addListener) mq.addListener(on);
+    }
+  }catch(e){}
+})();
+
 /* ===== 시장 브리핑 ===== */
 let brief=[
   {t:"현황",c:"t-pos",x:"코스피가 5월 15일 사상 첫 8,000선 돌파, 5월 27일 8,200선까지 올라 신고가 행진. 코스닥은 1,060선대."},
@@ -1051,7 +1106,11 @@ const GLOSS_LIST=[
   ["유가증권시장","코스피 시장의 정식 이름"],
   ["낙폭","내린 폭"],
   ["디스카운트","비슷한 회사보다 싸게 매겨진 것"],
-  ["재평가","시장이 값을 다시 매기는 것"]
+  ["재평가","시장이 값을 다시 매기는 것"],
+  ["사이드카","급락·급등할 때 프로그램 매매를 5분 멈추는 장치"],
+  ["서킷브레이커","지수가 크게 떨어지면 거래를 잠시 멈추는 장치"],
+  ["프로그램 매매","사람이 아니라 미리 짜 둔 조건에 따라 자동으로 사고파는 것"],
+  ["기술주","반도체·인터넷·소프트웨어처럼 기술로 돈을 버는 회사들"]
 ].sort((a,b)=>b[0].length-a[0].length);
 
 /* --- 3) 말투 통일: 「~했다/~이다」 → 「~했습니다/~입니다」 ---
@@ -1234,12 +1293,24 @@ function parseCSV(txt){
 /* ── 시세 표시의 3상태를 분리한다: 확인 중 / 미제공 / 불러오지 못함 ──
    값이 없다는 사실을 빈칸으로 두지 않는다. 원인은 배너 한 곳에서만 말한다. */
 let liveState="loading";      // loading | ok | fail
+let liveFailAt=0;             // 마지막으로 전체 조회가 실패한 시각 — 그보다 먼저 받은 값만 옛 값이다
 let liveAt=0;                 // 마지막으로 시세를 성공적으로 받은 시각
 let liveLoading=false;        // 동시 호출 가드(경쟁 조건)
+/* 내장 기본값은 2026년 5월 스냅샷이다. content.json 이 일부만 와도 나머지 자리에 그 옛 내용이
+   남아 '오늘 날짜가 붙은 5월 본문'이 됐다(코덱스 재현). 선언은 구조 참고용으로 두고 여기서 비운다 —
+   도착하지 않은 섹션은 내장값 대신 '불러오지 못했습니다' 안내가 나온다. */
+brief=[]; scenarios=[]; stocks=[]; watch=[]; aiRows=[]; monitor=[]; consensusTxt=""; globalNote="";
+
 const LIVE_STALE_MS=30*60*1000;
 /* 새로 고치려다 실패했으면 30분을 기다리지 않고 곧바로 '옛 값'으로 표시한다 —
    배너만 실패를 말하고 숫자는 살아 있으면 지금 값으로 읽힌다(실측) */
-function liveStale(v){ if(!(v && v.ts)) return false; return liveState==="fail" || (Date.now()-v.ts > LIVE_STALE_MS); }
+/* 실패 '이후에' 개별 조회로 새로 받은 값까지 옛 값으로 보이던 것을 고친다 —
+   값의 수신 시각과 마지막 실패 시각을 비교한다(목록·상세·관심종목·요약이 같은 판정을 쓴다). */
+function liveStale(v){
+  if(!(v && v.ts)) return false;
+  if(Date.now()-v.ts > LIVE_STALE_MS) return true;
+  return !!(liveFailAt && v.ts <= liveFailAt);
+}
 function hhmm(ms){ try{ const d=new Date(ms); return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }catch(e){ return ""; } }
 /* 등락률 표기 규칙 하나로 고정: 소수 2자리, 부호는 화살표로만, 0은 '보합' */
 function rateCls(r){ return (typeof r!=="number"||!isFinite(r))?"":(r>0?"up":(r<0?"down":"flat")); }
@@ -1295,7 +1366,7 @@ function renderContentGate(){
   setHTML("brief", cnoteHtml("li"));
   setHTML("scenarios", cnoteHtml());
   setHTML("aibody", cnoteHtml("tr"));
-  setHTML("consensus", contentState==="fail"?"오늘 AI 4곳의 공통 결론을 불러오지 못했습니다.":"AI 4곳의 공통 결론을 불러오는 중…");
+  setHTML("consensus", contentState==="fail"?"오늘의 공통 결론을 불러오지 못했습니다.":"네 관점의 공통 결론을 불러오는 중…");
   setHTML("monitor", cnoteHtml());
   setHTML("buylist", cnoteHtml());
   setHTML("avoidlist", cnoteHtml());
@@ -1321,8 +1392,8 @@ function rerenderContent(){
     : ""));
   /* 시나리오: 제목과 강세/기본/약세 뱃지는 항상 보이고 설명만 접는다.
      설명이 각 280자여서 세 개를 펼쳐 두면 모바일에서 1,186px 이었다. */
-  setHTML("scenarios", arr(scenarios).map((s,i)=>`<details class="row"${i===0?" open":""}><summary class="h">${esc(labelWord(s&&s.pl||""))}<span class="p ${esc(s&&s.p||"")}">${esc(s&&s.h||"")}</span></summary><div class="d">${soft(s&&s.d||"")}</div></details>`).join(""));
-  setHTML("aibody", arr(aiRows).map(r=>`<tr><td><b>${esc(r&&r.ai||"")}</b><span class="role">${esc(r&&r.role||"")}</span></td><td>${soft(r&&r.concl||"")}</td><td><span class="verdict ${esc(r&&r.v||"")}">${esc(r&&r.vt||"")}</span></td></tr>`).join(""));
+  setHTML("scenarios", arr(scenarios).map((s,i)=>`<details class="row"${scnOpenIdx(scenarios)===i?" open":""}><summary class="h">${esc(labelWord(s&&s.pl||""))}<span class="p ${esc(s&&s.p||"")}">${esc(s&&s.h||"")}</span></summary><div class="d">${soft(s&&s.d||"")}</div></details>`).join(""));
+  setHTML("aibody", arr(aiRows).map(r=>`<tr><td><b>${esc(r&&r.role||"")}</b></td><td>${soft(r&&r.concl||"")}</td><td><span class="verdict ${esc(r&&r.v||"")}">${esc(r&&r.vt||"")}</span></td></tr>`).join(""));
   /* 살균: 「<script」·「on*=」 문자열 치환은 폐기했다 — srcdoc·javascript: URL·<iframe>·<object>·
      <base>가 전부 통과해 실제로 스크립트가 실행됐다(iframe srcdoc 으로 실측 확인).
      이제 전부 이스케이프한 뒤 필요한 <b> 한 종류만 되돌린다. 다른 태그는 살아남지 못한다. */
@@ -1342,8 +1413,9 @@ async function loadContent(){
     /* 핵심 섹션이 하나라도 비면 '도착'으로 치지 않는다 — 비면 내장 기본값(5월 스냅샷)이
        오늘 날짜를 달고 그대로 남는다(실측: {"updated":"2026-10-30"} 만 와도 5월 내용이 떴다) */
     if(!/^\d{4}-\d{2}-\d{2}$/.test(String(c.updated||""))) throw new Error("updated 없음");
-    if(!Array.isArray(c.brief) || !c.brief.length) throw new Error("brief 없음");
-    if(!Array.isArray(c.stocks) || !c.stocks.length) throw new Error("stocks 없음");
+    const okArr=(a)=>Array.isArray(a)&&a.length>0&&a.every(x=>x&&typeof x==="object"&&!Array.isArray(x));
+    if(!okArr(c.brief)) throw new Error("brief 없음");
+    if(!okArr(c.stocks)) throw new Error("stocks 없음");
     if(Array.isArray(c.brief)) brief=c.brief;
     if(Array.isArray(c.scenarios)) scenarios=c.scenarios;
     if(Array.isArray(c.stocks)) stocks=c.stocks;
@@ -1395,6 +1467,7 @@ async function loadMacro(){
     const at=Date.now();
     /* 값이 없으면 '—' 로 되돌린다 — 이전 값이 현재 값 자리에 남지 않게 */
     macroTile("KOSPI", m.KOSPI, at, true);
+    try{ syncScenarioOpen(); }catch(e){}
     macroTile("USDKRW", m.USDKRW, at, false);
     window.__macro=m; window.__macroAt=at; window.__macroFail=false;
     if(window.__sumUpdate)window.__sumUpdate();
@@ -1502,7 +1575,7 @@ async function loadLive(){
     liveBar("ok", `시세 ${n}종목 · ${hhmm(now)} 받음 (약 20분 지연) ·`);
   }catch(e){
     console.warn("[시세] 불러오기 실패:", e, inCowork()?"(Cowork 커넥터 경로)":(backendOn()?"(백엔드 경로)":"(공개 구글시트 CSV 경로)"));
-    liveState="fail";
+    liveState="fail"; liveFailAt=Date.now();
     liveBar("fail", liveAt
       ? `지금 시세를 불러올 수 없습니다 · 아래 가격은 ${hhmm(liveAt)}에 받은 값입니다.`
       : "지금 시세를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.");
@@ -1516,9 +1589,10 @@ async function loadLive(){
 }
 
 $("ticks").innerHTML=ticks.map(t=>`<div class="tick"><div class="k">${t.k}</div><div class="v"${t.key?` id="tv_${t.key}"`:""}>${t.v}</div><div class="c ${t.dir}"${t.key?` id="tc_${t.key}"`:""}>${t.c}</div></div>`).join("");
-(function(){const mb=$("modebadge"); if(mb) mb.textContent = inCowork()?"앱에서 보는 중 · 모든 기능":(BACKEND_URL?"연결된 화면":"누구나 볼 수 있는 화면 · 20분 늦은 시세");})();
+/* 고지는 한 줄로만 말한다 — 첫 화면에서 세 번 되풀이되면 아무도 읽지 않는다 */
+(function(){const mb=$("modebadge"); if(mb) mb.textContent = inCowork()?"앱에서 보는 중 · 모든 기능 · 투자자문 아님":(BACKEND_URL?"연결된 화면 · 투자자문 아님":"20분 늦은 시세 · 정보 도구 · 투자자문 아님");})();
 loadMacro();
-$("asof").textContent="AI 네 곳이 하루 두 번 시장을 정리한 내용입니다. 위에서 아래로 차례대로 읽으시면 됩니다.";
+$("asof").textContent="AI가 하루 두 번 시장을 정리한 내용입니다. 위에서 아래로 차례대로 읽으시면 됩니다.";
 /* 첫 렌더: content.json을 확인하기 전에는 내장 기본값(지난 스냅샷)을 그리지 않는다 */
 if(contentState==="ok") rerenderContent(); else renderContentGate();
 
@@ -1577,9 +1651,18 @@ function ensureChartLib(){
   });
   return chartLibP;
 }
+/* 라이브러리를 받는 동안 다른 종목을 고르면 앞 종목의 이력이 새 제목 아래 그려졌다(코덱스 재현).
+   요청마다 세대값을 매겨, 돌아왔을 때 화면이 그대로인지 확인한 뒤에만 그린다. */
+let chartGen=0;
 function drawChart(labels,closes){
-  if(!$("pxchart")) return;
-  ensureChartLib().then(function(ok){ if(ok) drawChartNow(labels,closes); });
+  const el=$("pxchart"); if(!el) return;
+  const my=++chartGen;
+  ensureChartLib().then(function(ok){
+    if(my!==chartGen) return;              /* 그 사이 다른 종목을 골랐다 */
+    if($("pxchart")!==el) return;          /* 캔버스가 다시 그려졌다 */
+    if(!ok){ try{ el.replaceWith(Object.assign(document.createElement("p"),{className:"livena",textContent:"차트를 불러오지 못했습니다."})); }catch(e){} return; }
+    drawChartNow(labels,closes);
+  });
 }
 function drawChartNow(labels,closes){
   const el=$("pxchart"); if(!el||!window.Chart) return;
@@ -1677,8 +1760,8 @@ function renderDetail(s,opts){
      (pts.length?`<span class="dlab">${esc(ptLabel)}</span><ul>${pts.map(p=>`<li>${soft(p)}</li>`).join("")}</ul>`:``)+
      (s.out?`<span class="dlab">앞으로 6개월 동안 볼 점</span><div>${soft(s.out)}</div>`:``)+
    `</div></details>`:``)+
-   `<div class="dmeta"><span class="mbadge ${confCls[s.conf]||""}">확신도 ${esc(s.conf||"확인 안 됨")}</span><span class="mbadge">${lite}</span></div>`+
-   `<p class="dnote">확신도는 그렇게 본 <b>근거 자료가 얼마나 뚜렷한지</b>를 뜻합니다. 주가가 얼마나 오를지와는 관계가 없고, AI의 투표 결과도 아닙니다.</p>`+
+   `<div class="dmeta"><span class="mbadge ${confCls[s.conf]||""}">${esc(confWord[s.conf]||"자료 확인 안 됨")}</span><span class="mbadge">${lite}</span></div>`+
+   `<p class="dnote">‘자료 많음·보통·적음’은 그렇게 볼 <b>근거 자료가 얼마나 모였는지</b>만 뜻합니다. 주가가 얼마나 오를지와는 관계가 없고, AI의 투표 결과도 아닙니다.</p>`+
    (s.src?`<a class="dsrc" href="${/^https?:\/\//i.test(s.url||'')?esc(s.url):'#'}" target="_blank" rel="noopener">출처: ${esc(s.src)} ↗</a>`:``)+
    aiRowHtml()+
    `<div id="aiopinion" role="status" aria-live="polite"></div>`+
@@ -1750,7 +1833,7 @@ async function aiOpinion(s){
     else { txt=await apiAI(ctx, prompt); }
     box.innerHTML='<div class="aiout"><div class="aihd">Claude에게 지금 물어본 답 (위 자료와 현재 시세를 근거로)</div>'+
       esc(txt).replace(/\n/g,"<br>")+
-      '<div class="ainote">※ 이 자리에서 바로 물어볼 수 있는 AI는 Claude 한 곳입니다. 그래서 Claude가 네 가지 관점으로 나눠 답했습니다. 위쪽 &lsquo;AI 4곳은 뭐라고 했나&rsquo;는 매일 미리 정리해 둔 결과입니다.</div></div>';
+      '<div class="ainote">※ 이 자리에서 바로 물어볼 수 있는 AI는 Claude 한 곳입니다. 그래서 Claude가 네 가지 관점으로 나눠 답했습니다. 위쪽 &lsquo;AI가 네 관점으로 본 결과&rsquo;는 매일 미리 정리해 둔 것입니다.</div></div>';
   }catch(e){
     box.innerHTML='<div class="aiout off">AI 의견을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>';
   }
@@ -1822,7 +1905,8 @@ $("q").addEventListener("change",doLookup);
 $("chips").addEventListener("click",e=>{const t=e.target.closest?e.target.closest("[data-n]"):null;const n=t&&t.getAttribute("data-n");if(n){$("q").value=n;lastQ="";doLookup();}});
 
 // reco lists
-const confWord={"상":"근거 확실","중":"근거 보통","하":"근거 약함"};
+/* '확실'이라는 말이 매수 보증으로 읽혔다 — 자료가 얼마나 모였는지만 적는다 */
+const confWord={"상":"자료 많음","중":"자료 보통","하":"자료 적음"};
 function rrow(s){
   const lp=liveStr(s.code);
   const lite="";
@@ -1901,7 +1985,7 @@ document.addEventListener("visibilitychange",function(){
   window.__gnote=function(t){var el=document.getElementById("gnote");if(el)el.innerHTML=t?(""+safeSoft(t)):"";};
   function card(){if(document.getElementById("globalcard"))return;
     var host=document.createElement("div");host.className="card";host.id="globalcard";
-    host.innerHTML='<h3 class="cardh"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>밤사이 해외 시장</h3><div class="sub">우리가 자는 사이 해외 시장이 어땠는지입니다. 지수는 포인트, 종목은 달러(USD). 매매 권유가 아닙니다.</div><div id="gnote" class="sub" style="color:#3b3a86;background:#eef1fe;border-radius:8px;padding:8px 10px;margin:6px 0"></div><div id="gidx" class="ticks" style="margin-top:6px"></div><div style="font-weight:600;margin:12px 2px 6px">미국의 대표적인 회사들</div><div id="gstk" class="ticks"></div><div id="gstatus" class="asof" role="status" aria-live="polite" style="margin-top:8px">불러오는 중…</div>';
+    host.innerHTML='<h3 class="cardh">밤사이 해외 시장</h3><div class="sub">우리가 자는 사이 해외 시장이 어땠는지입니다. 지수는 포인트, 종목은 달러(USD). 매매 권유가 아닙니다.</div><div id="gnote" class="sub" style="color:#3b3a86;background:#eef1fe;border-radius:8px;padding:8px 10px;margin:6px 0"></div><div id="gidx" class="ticks" style="margin-top:6px"></div><div style="font-weight:600;margin:12px 2px 6px">미국의 대표적인 회사들</div><div id="gstk" class="ticks"></div><div id="gstatus" class="asof" role="status" aria-live="polite" style="margin-top:8px">불러오는 중…</div>';
     var slot=document.getElementById("slot-global");
     if(slot&&slot.parentNode){slot.parentNode.insertBefore(host,slot);}
     else{var asof=document.getElementById("asof");
@@ -1987,7 +2071,7 @@ document.addEventListener("visibilitychange",function(){
  function card(){
    if(document.getElementById("watchcard"))return;
    var host=document.createElement("div");host.className="card";host.id="watchcard";
-   host.innerHTML='<h2 id="h-mine"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>내가 담아둔 종목</h2>'
+   host.innerHTML='<h2 id="h-mine">내가 담아둔 종목</h2>'
    +'<div class="sub">종목을 넣고 <b>평단가</b>(산 평균 가격)와 수량을 적으면 손익이 계산됩니다.</div>'+'<p class="termnote">값은 <b>이 브라우저에만 저장</b>됩니다. 목록은 본인이 고른 것이지 이 화면의 추천이 아닙니다.</p>'
    +'<div id="wlbody" tabindex="0" role="group" aria-label="내가 담아둔 종목 목록 (넓은 화면에서는 좌우로 밀 수 있습니다)" style="margin-top:8px;overflow-x:auto"></div>'
    +'<div id="wltot" class="asof" role="status" aria-live="polite" style="margin-top:8px"></div>'
@@ -2006,7 +2090,9 @@ document.addEventListener("visibilitychange",function(){
    var avg=parseFloat(it.avg)||0, qty=parseFloat(it.qty)||0;
    var d=null,r=null,buy=0,val=0;
    if(pr!=null&&avg>0&&qty>0){ val=pr*qty; buy=avg*qty; d=val-buy; r=buy?d/buy*100:0; }
-   return {pr:pr,rt:rt,stale:!!(v&&v.ts&&(Date.now()-v.ts>STALE)),avg:avg,qty:qty,d:d,r:r,buy:buy,val:val};
+   /* 여기만 30분 판정을 따로 쓰고 있어 실패 직후 관심종목에는 '옛 값' 표시가 빠졌다 */
+   var st=(typeof liveStale==="function")?liveStale(v):!!(v&&v.ts&&(Date.now()-v.ts>STALE));
+   return {pr:pr,rt:rt,stale:st,avg:avg,qty:qty,d:d,r:r,buy:buy,val:val};
  }
  function signCls(x){return x>0?"up":(x<0?"down":"flat");}
  /* 값만 다시 계산한다 — 입력 중인 칸을 갈아엎지 않으므로 포커스와 키보드가 유지된다 */
@@ -2040,7 +2126,7 @@ document.addEventListener("visibilitychange",function(){
  function render(){
    var list=load(), b=document.getElementById("wlbody"); if(!b) return;
    if(!list.length){
-     b.innerHTML='<div class="wlempty"><p>아직 담아둔 종목이 없습니다. 위 칸에 이름을 넣고 <b>추가</b>를 눌러 보세요.</p>'
+     b.innerHTML='<div class="wlempty"><p>아직 담아둔 종목이 없습니다. 아래 입력칸에 이름을 넣고 <b>추가</b>를 눌러 보세요.</p>'
        +'<button type="button" id="wlseed">예시로 3개 넣어보기</button>'
        +'<p class="livena">예시는 화면이 어떻게 보이는지 알려드리려는 것이며, 권유가 아닙니다.</p></div>';
      var sb=document.getElementById("wlseed");
@@ -2087,13 +2173,23 @@ document.addEventListener("visibilitychange",function(){
      btn.addEventListener("click",function(e){
        var code=btn.getAttribute("data-del"), before=load();
        var gone=before.find(function(x){return x.code===code;});
+       var at=before.findIndex(function(x){return x.code===code;});
        save(before.filter(function(x){return x.code!==code;}));
-       undoSnap=before; render();
+       /* 배열 전체를 되돌리면 그 사이에 고친 다른 종목의 평단가까지 옛 값으로 돌아갔다(코덱스 재현).
+          지운 항목과 자리만 기억해 '지금' 목록에 끼워 넣는다. */
+       undoSnap={item:gone,at:at}; render();
        var box=document.createElement("span");
        box.appendChild(document.createTextNode((gone&&gone.name?gone.name:code)+" 삭제됨 · "));
        var u=document.createElement("button");
        u.type="button"; u.className="wlundo"; u.textContent="되돌리기";
-       u.addEventListener("click",function(){ if(undoSnap){save(undoSnap);undoSnap=null;render();note("");} });
+       u.addEventListener("click",function(){
+         if(!undoSnap||!undoSnap.item) return;
+         var cur=load(), it=undoSnap.item, pos=Math.max(0,Math.min(cur.length,undoSnap.at));
+         if(!cur.some(function(x){return x.code===it.code;})) cur.splice(pos,0,it);
+         save(cur); undoSnap=null; render(); note("");
+         /* 되돌린 뒤 초점이 사라지던 것 — 복구한 행의 지우기 버튼으로 돌려준다 */
+         try{ var nb=document.querySelector('#wlbody button[data-del="'+it.code+'"]'); if(nb) nb.focus(); }catch(err){}
+       });
        box.appendChild(u); note(box);
        /* 표를 다시 그리면 포커스가 사라져(실측: activeElement=BODY) 키보드로는
           8초짜리 '되돌리기'에 닿을 수 없었다 — 키보드로 지웠을 때만 그 버튼으로 옮긴다 */
@@ -2201,7 +2297,7 @@ document.addEventListener("visibilitychange",function(){
    if(v===0)return "보합";return (v>0?"▲":"▼")+Math.abs(v).toFixed(1)+"%";}
  function card(){if(document.getElementById("heatcard"))return;
    var host=document.createElement("div");host.className="card";host.id="heatcard";
-   host.innerHTML='<h3 class="cardh"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>업종별 오늘 등락 지도</h3><div class="sub">이 화면이 보는 종목을 업종끼리 묶어 오늘 등락으로 칠했습니다. 빨강이 오름, 파랑이 내림이며 ▲·▼ 기호도 함께 적었습니다.</div><div id="heatbody" style="margin-top:6px"></div><div class="asof" id="heatstatus" role="status" aria-live="polite" style="margin-top:6px"></div>';
+   host.innerHTML='<h3 class="cardh">업종별 오늘 등락 지도</h3><div class="sub">이 화면이 보는 종목을 업종끼리 묶어 오늘 등락으로 칠했습니다. 빨강이 오름, 파랑이 내림이며 ▲·▼ 기호도 함께 적었습니다.</div><div id="heatbody" style="margin-top:6px"></div><div class="asof" id="heatstatus" role="status" aria-live="polite" style="margin-top:6px"></div>';
    var slot=document.getElementById("slot-heat");
    if(slot&&slot.parentNode){slot.parentNode.insertBefore(host,slot);return;}
    var anchor=document.getElementById("watchcard")||document.getElementById("globalcard")||document.getElementById("asof");
@@ -2251,12 +2347,18 @@ document.addEventListener("visibilitychange",function(){
  function col(s){return s<45?"var(--price-down)":s<=55?"var(--muted)":"var(--price-up)";}
  function card(){if(document.getElementById("sentcard"))return;
    var host=document.createElement("div");host.className="card";host.id="sentcard";
-   host.innerHTML='<h3 class="cardh"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>오늘 분위기</h3><div class="sub">이 화면이 보는 스무남은 종목의 오늘 등락으로만 계산한 참고 수치입니다. <b>시장 전체를 재는 지수가 아닙니다.</b></div><div id="sentbody" role="status" aria-live="polite" style="margin-top:6px"></div><div class="asof" id="sentstatus" style="margin-top:6px"></div>';
+   host.innerHTML='<h3 class="cardh">오늘 분위기</h3><div class="sub">이 화면이 보는 스무남은 종목의 오늘 등락으로만 계산한 참고 수치입니다. <b>시장 전체를 재는 지수가 아닙니다.</b></div><div id="sentbody" role="status" aria-live="polite" style="margin-top:6px"></div><div class="asof" id="sentstatus" style="margin-top:6px"></div>';
    var slot=document.getElementById("slot-sent");
    if(slot&&slot.parentNode){slot.parentNode.insertBefore(host,slot);return;}
    var anchor=document.getElementById("heatcard")||document.getElementById("watchcard")||document.getElementById("asof");
    if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(host,anchor);else{var w=document.querySelector(".wrap");if(w)w.appendChild(host);}}
  function render(){var b=document.getElementById("sentbody");if(!b)return;var r=calc();
+   /* 첫 화면 KPI 첫 칸에도 같은 점수를 올린다 */
+   try{
+     var mv=document.getElementById("tv_MOOD"), mc=document.getElementById("tc_MOOD");
+     if(mv) mv.textContent=(r&&r.n)?(r.score+"/100"):"—";
+     if(mc){ mc.textContent=(r&&r.n)?label(r.score):"시세 확인 불가"; mc.className="c"; }
+   }catch(e){}
    var st=document.getElementById("sentstatus");
    if(!r){b.innerHTML='<div class="cnote">'+((typeof contentState!=="undefined"&&contentState!=="ok")?'오늘 분석을 불러오면 계산합니다.':'시세를 받으면 계산합니다…')+'</div>';if(st)st.textContent="";return;}
    if(!r.enough){
@@ -2595,7 +2697,9 @@ details.note>summary:focus-visible{outline:2px solid var(--accent);outline-offse
         var bw=new Date(ums+bi*86400000).getUTCDay();
         if(bw!==0 && bw!==6) biz++;
       }
-      if(biz>=2) return {state:"stale", text:label, flag:biz+"거래일 전 분석 · 갱신이 멈춘 것 같습니다", retry:true};
+      /* 공휴일을 못 거른다(설·추석 연휴 뒤 과대 계산). 단정하지 않고 '평일 기준'임을 밝힌다. */
+      if(diff>40) return {state:"stale", text:label, flag:"한참 전 분석입니다 · 다시 불러와 보세요", retry:true};
+      if(biz>=2) return {state:"stale", text:label, flag:"평일 기준 "+biz+"일째 그대로입니다 · 공휴일이면 정상일 수 있어요", retry:true};
       if(biz===1) return {state:"ok", text:label, flag:"지난 거래일 분석", retry:false};
       return {state:"ok", text:label, flag:"", retry:false};
     }
@@ -2660,6 +2764,8 @@ details.note>summary:focus-visible{outline:2px solid var(--accent);outline-offse
       var n=0,up=0,down=0,flat=0;
       a.forEach(function(it){
         var v=liveMap[pad6(it&&it.code)];
+        /* 옛 값으로 '오늘'을 말하지 않는다 — 수신 시각이 지났거나 조회가 실패한 값은 세지 않는다 */
+        if(typeof liveStale==="function" && liveStale(v)) return;
         if(v&&typeof v.rate==="number"&&isFinite(v.rate)){ n++; if(v.rate>0)up++; else if(v.rate<0)down++; else flat++; }
       });
       return n?{n:n,up:up,down:down,flat:flat}:null;
