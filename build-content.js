@@ -15,6 +15,31 @@ const MODELS = process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : ["gemini-
 // SESSION=open(장 시작 전) | close(마감 후). 워크플로에서 주입.
 const SESSION = (process.env.SESSION || "close").toLowerCase();
 
+/* --- 진단 기록: 매 실행 결과를 last-run.json으로 남긴다 (조용한 실패 방지) --- */
+const __log = [];
+const __origLog = console.log;
+console.log = function () {
+  const a = Array.prototype.slice.call(arguments);
+  __log.push(a.map(function (x) { return typeof x === "string" ? x : JSON.stringify(x); }).join(" "));
+  __origLog.apply(console, a);
+};
+process.on("exit", function (code) {
+  try {
+    const joined = __log.join("\n");
+    const ok = joined.indexOf("content.json 갱신 완료") >= 0;
+    const bad = __log.filter(function (l) { return /유지|스킵|중단|실패|부실/.test(l); });
+    fs.writeFileSync("last-run.json", JSON.stringify({
+      ranAt: new Date().toISOString(),
+      session: SESSION,
+      status: ok ? "updated" : "skipped",
+      reason: ok ? "" : (bad.length ? bad[bad.length - 1] : "알 수 없음"),
+      exitCode: code,
+      log: __log.slice(-40)
+    }, null, 1));
+  } catch (e) {}
+});
+
+
 function todayKST() {
   return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
 }
@@ -56,6 +81,8 @@ async function gemini(prompt, { grounded = false, maxTokens = 8192 } = {}) {
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: { temperature: grounded ? 0.2 : 0.45, maxOutputTokens: maxTokens },
     };
+    /* 2.5 계열은 생각 토큰이 출력 한도를 먹어 응답이 잘린다 — 생각 끄기 */
+    if (/2\.5/.test(model)) body.generationConfig.thinkingConfig = { thinkingBudget: 0 };
     if (grounded) body.tools = [{ google_search: {} }];
     else body.generationConfig.responseMimeType = "application/json";
     try {
@@ -76,6 +103,42 @@ async function gemini(prompt, { grounded = false, maxTokens = 8192 } = {}) {
 }
 
 function extractJson(txt) {
+  const r = extractJsonBasic(txt);
+  if (r) return r;
+  return repairJson(txt);
+}
+/* 응답이 중간에 잘렸을 때 마지막으로 온전히 닫힌 항목까지만 살려 쓴다 */
+function repairJson(txt) {
+  const s0 = txt.indexOf("{");
+  if (s0 < 0) return null;
+  const body = txt.slice(s0);
+  let depth = 0, inStr = false, esc = false, lastSafe = -1;
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    if (esc) { esc = false; continue; }
+    if (ch === "\\") { esc = true; continue; }
+    if (ch === "\"") { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (ch === "{" || ch === "[") depth++;
+    else if (ch === "}" || ch === "]") { depth--; if (depth > 0) lastSafe = i; }
+  }
+  if (lastSafe < 0) return null;
+  const st = [];
+  let q = false, e2 = false;
+  for (let i = 0; i <= lastSafe; i++) {
+    const ch = body[i];
+    if (e2) { e2 = false; continue; }
+    if (ch === "\\") { e2 = true; continue; }
+    if (ch === "\"") { q = !q; continue; }
+    if (q) continue;
+    if (ch === "{" || ch === "[") st.push(ch);
+    else if (ch === "}" || ch === "]") st.pop();
+  }
+  const tail = st.reverse().map(function (c) { return c === "{" ? "}" : "]"; }).join("");
+  try { return JSON.parse(body.slice(0, lastSafe + 1) + tail); } catch (e) {}
+  return null;
+}
+function extractJsonBasic(txt) {
   try { return JSON.parse(txt); } catch (e) {}
   const s = txt.indexOf("{"), e2 = txt.lastIndexOf("}");
   if (s >= 0 && e2 > s) { try { return JSON.parse(txt.slice(s, e2 + 1)); } catch (e) {} }
@@ -193,13 +256,13 @@ ${macro.length ? "매크로: " + macro.join(", ") : ""}
 ${quotes.length ? "종목: " + quotes.slice(0, 45).join(" / ") : ""}`;
 
   let research = "";
-  try { research = await gemini(researchPrompt, { grounded: true, maxTokens: 4096 }); }
+  try { research = await gemini(researchPrompt, { grounded: true, maxTokens: 8192 }); }
   catch (e) {
     console.log("[warn] 그라운딩 리서치 실패:", e.message);
-    try { research = await gemini(researchPrompt.replace("Google 검색을 사용해 ", ""), { grounded: false, maxTokens: 4096 }); }
+    try { research = await gemini(researchPrompt.replace("Google 검색을 사용해 ", ""), { grounded: false, maxTokens: 8192 }); }
     catch (e2) { console.log("[warn] 폴백 리서치도 실패:", e2.message); }
   }
-  if (!research || research.length < 200) {
+  if (!research || research.length < 800) {
     console.log("리서치 결과가 부실해 갱신을 건너뜁니다 — 기존 content.json 유지");
     process.exit(0);
   }
@@ -249,7 +312,7 @@ stocks는 정확히 20개: g:"buy" 10개 + g:"avoid" 10개.
   let gen = null;
   for (let attempt = 1; attempt <= 2 && !gen; attempt++) {
     try {
-      const txt = await gemini(buildPrompt, { grounded: false, maxTokens: 16384 });
+      const txt = await gemini(buildPrompt, { grounded: false, maxTokens: 60000 });
       gen = extractJson(txt);
       if (!gen) console.log(`[warn] ${attempt}차 JSON 파싱 실패`);
     } catch (e) { console.log(`[warn] ${attempt}차 생성 실패:`, e.message); }
