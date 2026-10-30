@@ -261,7 +261,7 @@ img,canvas,svg,video{max-width:100%;height:auto}
 .t-neu{background:var(--soft-neutral-bg);color:var(--soft-neutral-ink)}
 
 /* --- 시나리오 (제목은 항상 보이고 설명만 접힌다) --- */
-.scn .row{border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:var(--sp-2);min-width:0}
+.scn .row{border:0;border-left:3px solid var(--line);background:var(--card-soft);border-radius:0 var(--radius-md) var(--radius-md) 0;margin-bottom:var(--sp-2);min-width:0}
 .scn .row>summary.h{cursor:pointer;list-style:none;position:relative;
   padding:var(--sp-2) calc(var(--sp-3) + 1.4em) var(--sp-2) var(--sp-3);min-height:var(--tap);
   font-weight:700;font-size:var(--fs-base);display:flex;justify-content:space-between;
@@ -399,7 +399,8 @@ img,canvas,svg,video{max-width:100%;height:auto}
 .aicmp table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
 .aicmp th,.aicmp td{text-align:left;padding:var(--sp-2) var(--sp-1);border-bottom:1px solid var(--line);
   vertical-align:top;overflow-wrap:anywhere;word-break:keep-all}
-.aicmp th:first-child,.aicmp td:first-child{width:22%}
+.aicmp th:first-child,.aicmp td:first-child{width:26%}
+.aicmp td .role{display:block;margin-top:3px;font-size:var(--fs-xs);color:var(--muted);font-weight:600}
 .aicmp th:last-child,.aicmp td:last-child{width:15%}
 .aicmp th{font-size:var(--fs-xs);color:var(--muted)}
 .aicmp .role{font-size:var(--fs-xs);color:var(--grey);display:block}
@@ -442,7 +443,9 @@ img,canvas,svg,video{max-width:100%;height:auto}
 /* 8개 문단을 전부 펼쳐 두면 이 절 하나가 모바일에서 1,475px 을 차지한다.
    1열 아코디언으로 바꾸고 위 3개만 펼친다(제목은 항상 보이므로 훑기는 그대로 된다). */
 .mon{gap:var(--sp-2);grid-template-columns:minmax(0,1fr)}
-.mon .m{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-sm);
+/* 카드 속 테두리 상자를 겹쳐 쓰면 390px 화면에서 한 줄에 들어가는 글자가 줄어든다 —
+   테두리 대신 왼쪽 굵은 세로선과 연한 배경으로 구분한다 */
+.mon .m{background:var(--bg);border:0;border-left:3px solid var(--accent-line);border-radius:0 var(--radius-sm) var(--radius-sm) 0;
   min-width:0}
 .mon .m>summary{cursor:pointer;list-style:none;position:relative;
   min-height:var(--tap);padding:var(--sp-2) calc(var(--sp-3) + 1.4em) var(--sp-2) var(--sp-3);
@@ -634,7 +637,6 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
   <!-- 1. 오늘 시장 — 오늘 한국 시장은 어느 쪽이었고, 얼마나 움직였나 -->
   <section class="card" id="sec-today" aria-labelledby="h-today">
     <h2 id="h-today">오늘 시장</h2>
-    <div class="sub">오늘 한국 시장이 어느 쪽으로 얼마나 움직였는지부터 봅니다.</div>
     <p class="herolead heroloading" id="sumhero">오늘 시장을 불러오는 중입니다…</p>
     <p class="herometa" id="summeta">시세 확인 중…</p>
     <div class="ticks" id="ticks"></div>
@@ -645,7 +647,6 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
   <!-- 2. 왜 그렇게 움직였나 — 오늘 이 움직임을 만든 일이 무엇인가 -->
   <section class="card" id="sec-why" aria-labelledby="h-why">
     <h2 id="h-why">왜 그렇게 움직였나</h2>
-    <div class="sub">오늘의 움직임을 만든 일들을 짧게 정리했습니다.</div>
     <ul class="brief" id="brief"></ul>
     <details class="note">
       <summary>이 정리는 어떻게 만들었나 — AI 여러 곳의 관점을 모아 정리했습니다</summary>
@@ -653,6 +654,19 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
         <p>같은 하루를 AI가 네 가지 역할로 나눠 읽습니다. 한 번은 사실을 모으고, 한 번은 이유를 따져 보고, 한 번은 반대 근거를 찾고, 한 번은 앞의 셋을 다시 확인합니다. <b>서로 다른 회사의 AI 네 개가 아니라, 한 AI가 네 번 다른 각도로 본 것입니다.</b></p>
         <p>그렇게 모은 이야기를 짧은 문장으로 줄인 것이 위 목록입니다. 화면에서 그때그때 물어볼 수 있는 AI는 Claude 한 곳입니다.</p>
         <p>모두 공개된 보도와 리포트를 요약한 것입니다. 사실 확인을 대신하지 않으며, 매수·매도 권유가 아닙니다.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- 8. 여러 AI는 뭐라고 했나 — 시황 해석의 연장이라 '왜 그렇게 움직였나' 바로 뒤에 둔다 -->
+  <section class="card aicmp" id="sec-ai" aria-labelledby="h-ai">
+    <h2 id="h-ai"><span class="dot" aria-hidden="true" style="background:var(--amber)"></span><span id="aititle">여러 AI는 뭐라고 했나</span></h2>
+    <div class="sub" id="aisub">같은 자료를 여러 AI가 각각 읽은 결과입니다. 여러 곳이 같은 말을 한다고 해서 맞다는 보증은 아닙니다.</div>
+    <div class="consensus-row" id="consensus"></div>
+    <details class="note">
+      <summary>어느 AI가 무엇을 맡았고, 무엇이라고 했나</summary>
+      <div class="dbody">
+        <table><caption class="sr-only">AI별 결론과 판정 비교</caption><thead><tr><th scope="col">역할 / AI</th><th scope="col">결론</th><th scope="col">판정</th></tr></thead><tbody id="aibody"></tbody></table>
       </div>
     </details>
   </section>
@@ -666,7 +680,6 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
   <!-- 4. 지금 분위기와 시장 지도 — 심리 게이지 · 업종 지도 · 밤사이 해외 -->
   <section class="secgroup" id="sec-mood" aria-labelledby="h-mood">
     <h2 id="h-mood">지금 분위기와 시장 지도</h2>
-    <div class="sub">시장이 달아올랐는지 식었는지, 어느 업종이 움직였는지 봅니다.</div>
     <div class="moodgrid">
       <div id="slot-sent" hidden></div>
       <div id="slot-heat" hidden></div>
@@ -743,35 +756,6 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
     </div>
   </section>
 
-  <!-- 8. AI가 네 관점으로 본 결과 (결론 먼저, 근거 나중) -->
-  <section class="card aicmp" id="sec-ai" aria-labelledby="h-ai">
-    <h2 id="h-ai"><span class="dot" aria-hidden="true" style="background:var(--amber)"></span>AI가 네 관점으로 본 결과</h2>
-    <div class="sub">같은 하루를 <b>AI 한 곳이 네 가지 역할로 나눠</b> 읽은 결과입니다. 네 칸이 같은 말을 한다고 해서 맞다는 보증은 아닙니다.</div>
-    <div class="consensus-row" id="consensus"></div>
-    <details class="note">
-      <summary>네 가지 역할이 각각 무엇을 보고, 무엇이라고 했나</summary>
-      <div class="dbody">
-        <table><caption class="sr-only">네 가지 역할별 결론과 판정 비교</caption><thead><tr><th scope="col">AI / 역할</th><th scope="col">결론</th><th scope="col">판정</th></tr></thead><tbody id="aibody"></tbody></table>
-      </div>
-    </details>
-  </section>
-
-  <!-- 9. 성향별 배분 예시 (기본 접힘) -->
-  <section class="card" id="sec-guide" aria-labelledby="h-guide">
-    <h2 id="h-guide">성향별 배분 예시</h2>
-    <div class="sub">널리 알려진 배분 방식을 예시로 정리한 것입니다. <b>특정 개인에게 맞는 배분이 아닙니다.</b></div>
-    <p class="termnote">아래 숫자는 <b>‘이렇게 하라’는 지침이 아니라 ‘이런 방식이 흔히 쓰인다’는 설명</b>입니다. 특정 매매 규칙을 권하지 않습니다.</p>
-    <details class="note" id="dt-guide">
-      <summary>지금 보고 있는 예시: <b id="guidelabel">중립형</b> — 다른 성향도 보려면 펼치세요</summary>
-      <div class="dbody">
-        <div class="profgrid" id="profgrid" role="group" aria-label="투자 성향 선택"></div>
-        <div class="alloc" id="alloc"></div>
-        <div class="alegend"><span aria-hidden="true" style="color:#3b5bdb">■</span> 주식 <span aria-hidden="true" style="color:#3f7a52;margin-left:6px">■</span> 채권 <span aria-hidden="true" style="color:#6b7480;margin-left:6px">■</span> 현금</div>
-        <table class="gtable" id="gtable"><caption class="sr-only">선택한 성향의 배분 예시 항목별 설명</caption></table>
-      </div>
-    </details>
-  </section>
-
   <!-- 10. 이 화면 읽는 법 · 고지 -->
   <section class="card" id="sec-about" aria-labelledby="h-about">
     <h2 id="h-about"><span class="dot" aria-hidden="true" style="background:var(--grey)"></span>이 화면 읽는 법 · 고지</h2>
@@ -812,6 +796,22 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
     </details>
     <div class="foot">국내주식 · 해외주식 · 환율과 금리 · AI · 플랫폼 · 마케팅, 여섯 갈래로 나눠 살펴본 내용을 모았습니다 · 분석 기준 <span id="footdate">—</span></div>
   </section>
+  <!-- 9. 성향별 배분 예시 (기본 접힘) -->
+  <section class="card" id="sec-guide" aria-labelledby="h-guide">
+    <h2 id="h-guide">성향별 배분 예시</h2>
+    <div class="sub">널리 알려진 배분 방식을 예시로 정리한 것입니다. <b>특정 개인에게 맞는 배분이 아닙니다.</b></div>
+    <p class="termnote">아래 숫자는 <b>‘이렇게 하라’는 지침이 아니라 ‘이런 방식이 흔히 쓰인다’는 설명</b>입니다. 특정 매매 규칙을 권하지 않습니다.</p>
+    <details class="note" id="dt-guide">
+      <summary>지금 보고 있는 예시: <b id="guidelabel">중립형</b> — 다른 성향도 보려면 펼치세요</summary>
+      <div class="dbody">
+        <div class="profgrid" id="profgrid" role="group" aria-label="투자 성향 선택"></div>
+        <div class="alloc" id="alloc"></div>
+        <div class="alegend"><span aria-hidden="true" style="color:#3b5bdb">■</span> 주식 <span aria-hidden="true" style="color:#3f7a52;margin-left:6px">■</span> 채권 <span aria-hidden="true" style="color:#6b7480;margin-left:6px">■</span> 현금</div>
+        <table class="gtable" id="gtable"><caption class="sr-only">선택한 성향의 배분 예시 항목별 설명</caption></table>
+      </div>
+    </details>
+  </section>
+
 </main>
 
 <script>
@@ -1393,13 +1393,48 @@ function rerenderContent(){
   /* 시나리오: 제목과 강세/기본/약세 뱃지는 항상 보이고 설명만 접는다.
      설명이 각 280자여서 세 개를 펼쳐 두면 모바일에서 1,186px 이었다. */
   setHTML("scenarios", arr(scenarios).map((s,i)=>`<details class="row"${scnOpenIdx(scenarios)===i?" open":""}><summary class="h">${esc(labelWord(s&&s.pl||""))}<span class="p ${esc(s&&s.p||"")}">${esc(s&&s.h||"")}</span></summary><div class="d">${soft(s&&s.d||"")}</div></details>`).join(""));
-  setHTML("aibody", arr(aiRows).map(r=>`<tr><td><b>${esc(r&&r.role||"")}</b></td><td>${soft(r&&r.concl||"")}</td><td><span class="verdict ${esc(r&&r.v||"")}">${esc(r&&r.vt||"")}</span></td></tr>`).join(""));
+  /* 'AI 4곳' 같은 말을 고정으로 쓰지 않는다 — 오늘 실제로 답한 곳의 수를 세어 말한다.
+     ai 칸은 "Claude · 모델명" 형태이고, 생성기가 만든 칸이면 회사명이 없다. */
+  (function(){
+    const rows=arr(aiRows);
+    /* 실제로 호출한 칸만 "회사 · 모델명" 형태로 적힌다(생성기가 2026-10-31부터 그렇게 쓴다).
+       구분자가 없으면 옛 방식으로 이름만 붙여 둔 칸이므로 회사 수로 세지 않는다. */
+    const firms=[...new Set(rows.filter(r=>r&&typeof r.ai==="string"&&r.ai.indexOf(" · ")>0).map(r=>r.ai.split(" · ")[0].trim()).filter(Boolean))];
+    const real=firms.filter(f=>/claude|chatgpt|gpt|gemini|perplexity|grok|copilot/i.test(f));
+    const t=$("aititle"), sb=$("aisub");
+    if(real.length>=2){
+      if(t) t.textContent="AI "+real.length+"곳은 뭐라고 했나";
+      if(sb) sb.innerHTML="같은 자료를 <b>"+esc(real.join(" · "))+"</b> 가 각각 읽은 결과입니다. 여러 곳이 같은 말을 한다고 해서 맞다는 보증은 아닙니다.";
+    }else{
+      if(t) t.textContent="AI가 네 관점으로 본 결과";
+      if(sb) sb.innerHTML="오늘은 <b>AI 한 곳</b>이 네 가지 역할로 나눠 읽었습니다(다른 곳이 응답하지 않았습니다). 네 칸이 같은 말을 한다고 해서 맞다는 보증은 아닙니다.";
+    }
+  })();
+  setHTML("aibody", arr(aiRows).map(r=>`<tr><td><b>${esc(r&&r.role||"")}</b><span class="role">${esc(r&&r.ai||"")}</span></td><td>${soft(r&&r.concl||"")}</td><td><span class="verdict ${esc(r&&r.v||"")}">${esc(r&&r.vt||"")}</span></td></tr>`).join(""));
   /* 살균: 「<script」·「on*=」 문자열 치환은 폐기했다 — srcdoc·javascript: URL·<iframe>·<object>·
      <base>가 전부 통과해 실제로 스크립트가 실행됐다(iframe srcdoc 으로 실측 확인).
      이제 전부 이스케이프한 뒤 필요한 <b> 한 종류만 되돌린다. 다른 태그는 살아남지 못한다. */
   setHTML("consensus", glossify(esc(toneText(consensusTxt||"")).replace(/&lt;(\/?)b&gt;/g,"<$1b>")));
   /* 모니터링: 1열 아코디언 + 위 3개만 펼침 */
-  setHTML("monitor", arr(monitor).map((m,i)=>`<details class="m"${i<3?" open":""}><summary>${esc(labelWord(m&&m.k||""))}</summary><div class="v">${soft(m&&m.v||"")}</div></details>`).join(""));
+  /* 8칸을 다 펼쳐 두면 모바일에서 이 구역만 1,000px 을 넘는다 —
+     앞 4개만 펼치고 나머지는 '더 보기'로 접는다(내용은 그대로 둔다). */
+  (function(){
+    const ms=arr(monitor);
+    const cell=(m,open)=>`<details class="m"${open?" open":""}><summary>${esc(labelWord(m&&m.k||""))}</summary><div class="v">${soft(m&&m.v||"")}</div></details>`;
+    const head=ms.slice(0,4).map((m,i)=>cell(m,i<2)).join("");
+    const rest=ms.slice(4);
+    setHTML("monitor", head + (rest.length
+      ? `<div class="morewrap" id="monmore" hidden>${rest.map(m=>cell(m,false)).join("")}</div>`
+        + `<button type="button" class="morebtn" id="monmorebtn" aria-expanded="false" aria-controls="monmore">나머지 ${rest.length}개 지표도 보기</button>`
+      : ""));
+    const mb=$("monmorebtn");
+    if(mb) mb.addEventListener("click",function(){
+      const box=$("monmore"); if(!box) return;
+      const open=box.hidden; box.hidden=!open;
+      mb.setAttribute("aria-expanded",String(open));
+      mb.textContent=open?"지표 접기":("나머지 "+rest.length+"개 지표도 보기");
+    });
+  })();
   renderLists();
   if(curStock){ const fresh=arr(stocks).find(x=>x&&x.code===curStock.code); renderDetail(fresh||curStock); }
 }
@@ -2475,7 +2510,7 @@ details.note>.card>h2,details.note>.card>h3.cardh{border-bottom:0;padding-bottom
 
 /* 용어·성격을 알려주는 한 줄 — 접기 밖에 항상 보인다.
    "무엇이 아닌지"는 접힌 곳에 두면 읽히지 않는다. */
-.termnote{margin:var(--sp-2) 0 0;padding:var(--sp-2) var(--sp-3);
+.termnote{margin:var(--sp-2) 0 0;padding:var(--sp-2) 0 var(--sp-2) var(--sp-3);
   border-left:3px solid var(--accent);border-radius:0 var(--radius-sm) var(--radius-sm) 0;
   background:var(--accent-soft);color:var(--ink);
   font-size:var(--fs-sm);line-height:var(--lh-long);max-width:var(--measure);
