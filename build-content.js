@@ -17,6 +17,12 @@ const SESSION = (process.env.SESSION || "close").toLowerCase();
 
 /* --- 진단 기록: 매 실행 결과를 last-run.json으로 남긴다 (조용한 실패 방지) --- */
 const __log = [];
+/* 조용히 넘어가지 않는다: 갱신 못 하면 워크플로를 실패시켜 메일이 오게 한다 */
+function __bail() {
+  const last = __log.length ? __log[__log.length - 1] : "원인 불명";
+  console.log("::error::대시보드 갱신 실패 — " + last);
+  process.exit(1);
+}
 const __origLog = console.log;
 console.log = function () {
   const a = Array.prototype.slice.call(arguments);
@@ -223,7 +229,7 @@ function applyWatch(baseWatch, gen) {
 
 // ---------- 메인 ----------
 (async () => {
-  if (!KEY) { console.log("GEMINI_API_KEY 없음 — 스킵"); process.exit(0); }
+  if (!KEY) { console.log("GEMINI_API_KEY 없음 — 스킵"); __bail(); }
 
   let base = {};
   try { base = JSON.parse(fs.readFileSync("content.json", "utf8")); }
@@ -264,7 +270,7 @@ ${quotes.length ? "종목: " + quotes.slice(0, 45).join(" / ") : ""}`;
   }
   if (!research || research.length < 800) {
     console.log("리서치 결과가 부실해 갱신을 건너뜁니다 — 기존 content.json 유지");
-    process.exit(0);
+    __bail();
   }
 
   // --- 2단계: 스키마 생성 ---
@@ -317,7 +323,7 @@ stocks는 정확히 20개: g:"buy" 10개 + g:"avoid" 10개.
       if (!gen) console.log(`[warn] ${attempt}차 JSON 파싱 실패`);
     } catch (e) { console.log(`[warn] ${attempt}차 생성 실패:`, e.message); }
   }
-  if (!gen) { console.log("생성 실패 — 기존 content.json 유지"); process.exit(0); }
+  if (!gen) { console.log("생성 실패 — 기존 content.json 유지"); __bail(); }
 
   const nBrief = vBrief(gen.brief);
   const nScen = vScenarios(gen.scenarios);
@@ -332,7 +338,7 @@ stocks는 정확히 20개: g:"buy" 10개 + g:"avoid" 10개.
   console.log("[검증]", JSON.stringify(report));
 
   // 핵심 섹션(brief)과 종목이 모두 실패하면 커밋할 가치가 없다.
-  if (!nBrief && !nStocks) { console.log("핵심 섹션 검증 실패 — 기존 content.json 유지"); process.exit(0); }
+  if (!nBrief && !nStocks) { console.log("핵심 섹션 검증 실패 — 기존 content.json 유지"); __bail(); }
 
   const out = Object.assign({}, base, {
     updated: today,
