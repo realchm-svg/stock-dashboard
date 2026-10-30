@@ -177,11 +177,13 @@ function vKV(a, min, max, minLen) {
 }
 function vAiRows(a) {
   if (!Array.isArray(a) || a.length !== 4) return null;
-  const names = ["Perplexity Pro", "Claude Max", "Gemini Pro", "ChatGPT Pro"];
+  /* 이 스크립트는 Gemini 한 모델만 호출한다. 네 칸에 다른 회사 이름을 붙이면
+     "AI 네 곳이 각각 답했다"는 거짓이 된다 — 역할 이름만 쓴다(2026-10-31). */
+  const names = ["사실 수집·출처", "심층 추론", "반대 근거 점검", "교차 확인"];
   const vs = ["v-con", "v-dif", "v-dif", "v-solo"];
   const vts = ["팩트", "중립", "경계", "검증"];
   if (!a.every((r) => r && isStr(r.concl, 150))) return null;
-  return a.map((r, i) => ({ ai: names[i], role: isStr(r.role) ? r.role : ["실시간 수집·출처", "심층 추론(중립)", "종합(경계)", "교차검증"][i], concl: r.concl, v: vs[i], vt: vts[i] }));
+  return a.map((r, i) => ({ ai: names[i], role: isStr(r.role) ? r.role : names[i], concl: r.concl, v: vs[i], vt: vts[i] }));
 }
 function vStocks(a) {
   if (!Array.isArray(a)) return null;
