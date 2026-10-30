@@ -3,7 +3,9 @@
 //   1) Gemini + Google Search 그라운딩으로 오늘의 실제 시장 사실을 수집 (수치·출처 포함)
 //   2) 그 사실만을 근거로 대시보드 전체 스키마(JSON)를 생성
 // 검증을 통과한 섹션만 반영하고, 실패한 섹션은 기존 값을 유지한다(안전판).
-// 필요 환경변수: GEMINI_API_KEY
+// 필요 환경변수: GEMINI_API_KEY (필수), ANTHROPIC_API_KEY·OPENAI_API_KEY (AI 패널용, 없으면 그 칸은 비운다)
+// 모델은 실행 시점에 각 회사 목록 API 에서 '가장 좋은 것'을 골라 쓴다.
+// ANTHROPIC_MODEL / OPENAI_MODEL / GEMINI_MODEL 로 직접 지정할 수도 있다.
 // Node 20+ (전역 fetch)
 
 const fs = require("fs");
@@ -14,9 +16,12 @@ const KEY = process.env.GEMINI_API_KEY || "";
 const MODELS = process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"];
 // SESSION=open(장 시작 전) | close(마감 후). 워크플로에서 주입.
 const SESSION = (process.env.SESSION || "close").toLowerCase();
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || "";
+const OPENAI_KEY = process.env.OPENAI_API_KEY || "";
 
 /* --- 진단 기록: 매 실행 결과를 last-run.json으로 남긴다 (조용한 실패 방지) --- */
 const __log = [];
+let __panelNames = "";
 /* 조용히 넘어가지 않는다: 갱신 못 하면 워크플로를 실패시켜 메일이 오게 한다 */
 function __bail() {
   const last = __log.length ? __log[__log.length - 1] : "원인 불명";
@@ -37,6 +42,7 @@ process.on("exit", function (code) {
     fs.writeFileSync("last-run.json", JSON.stringify({
       ranAt: new Date().toISOString(),
       session: SESSION,
+      panel: (typeof __panelNames !== "undefined" ? __panelNames : ""),
       status: ok ? "updated" : "skipped",
       reason: ok ? "" : (bad.length ? bad[bad.length - 1] : "알 수 없음"),
       exitCode: code,
@@ -113,6 +119,180 @@ async function gemini(prompt, { grounded = false, maxTokens = 8192 } = {}) {
   throw new Error(lastErr);
 }
 
+/* ═══════════ AI 패널: Claude · ChatGPT · Gemini 를 실제로 호출한다 ═══════════
+   예전에는 Gemini 한 곳의 답을 네 조각으로 쪼개 놓고 네 회사 이름을 붙였다.
+   이제는 회사마다 진짜로 부르고, 응답하지 않은 곳은 그 사실을 그대로 적는다. */
+
+async function fetchJSON(url, opt, ms) {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), ms || 90000);
+  try {
+    const r = await fetch(url, Object.assign({ signal: ac.signal }, opt || {}));
+    const txt = await r.text();
+    let j = null; try { j = JSON.parse(txt); } catch (e) {}
+    return { ok: r.ok, status: r.status, json: j, text: txt };
+  } finally { clearTimeout(t); }
+}
+
+/* 각 회사의 모델 목록을 받아 '가장 좋은 것'을 고른다 — 새 모델이 나오면 자동으로 따라간다 */
+function rankBy(list, tiers, bad) {
+  const cand = list.filter((m) => !bad.some((b) => m.id.includes(b)));
+  for (const t of tiers) {
+    const hit = cand.filter((m) => t.test(m.id));
+    if (hit.length) { hit.sort((a, b) => (b.at || 0) - (a.at || 0) || (b.id > a.id ? 1 : -1)); return hit[0].id; }
+  }
+  return null;
+}
+
+async function pickAnthropicModel() {
+  if (process.env.ANTHROPIC_MODEL) return process.env.ANTHROPIC_MODEL;
+  const r = await fetchJSON("https://api.anthropic.com/v1/models?limit=100",
+    { headers: { "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01" } }, 30000);
+  if (!r.ok || !r.json || !Array.isArray(r.json.data)) return null;
+  const list = r.json.data.map((m) => ({ id: m.id, at: Date.parse(m.created_at || "") || 0 }));
+  /* 성능 높은 계열부터 — 이름이 바뀌어도 걸리도록 넓게 본다 */
+  return rankBy(list, [/opus/i, /sonnet/i, /haiku/i, /./], []);
+}
+
+async function pickOpenAIModel() {
+  if (process.env.OPENAI_MODEL) return process.env.OPENAI_MODEL;
+  const r = await fetchJSON("https://api.openai.com/v1/models",
+    { headers: { Authorization: "Bearer " + OPENAI_KEY } }, 30000);
+  if (!r.ok || !r.json || !Array.isArray(r.json.data)) return null;
+  const list = r.json.data.map((m) => ({ id: m.id, at: (m.created || 0) * 1000 }));
+  const bad = ["mini", "nano", "audio", "realtime", "embedding", "tts", "whisper", "image", "moderation", "search", "transcribe", "instruct", "codex-mini"];
+  /* 숫자가 큰 세대부터 — gpt-6 → gpt-5 → gpt-4.x 순으로 본다 */
+  return rankBy(list, [/^gpt-[6-9]/, /^gpt-5/, /^o[3-9]/, /^gpt-4\.[1-9]/, /^gpt-4o/, /^gpt-4/], bad);
+}
+
+async function pickGeminiModel() {
+  if (process.env.GEMINI_PANEL_MODEL) return process.env.GEMINI_PANEL_MODEL;
+  const r = await fetchJSON("https://generativelanguage.googleapis.com/v1beta/models?key=" + encodeURIComponent(KEY), {}, 30000);
+  if (!r.ok || !r.json || !Array.isArray(r.json.models)) return "gemini-2.5-pro";
+  const list = r.json.models
+    .filter((m) => Array.isArray(m.supportedGenerationMethods) ? m.supportedGenerationMethods.includes("generateContent") : true)
+    .map((m) => ({ id: String(m.name || "").replace(/^models\//, ""), at: 0 }));
+  const bad = ["embedding", "aqa", "vision", "image", "tts", "live", "thinking-exp"];
+  return rankBy(list, [/[3-9]\..*pro/, /pro/, /[3-9]\..*flash/, /flash/, /./], bad) || "gemini-2.5-pro";
+}
+
+async function askAnthropic(model, prompt) {
+  const r = await fetchJSON("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+    body: JSON.stringify({ model, max_tokens: 2000, messages: [{ role: "user", content: prompt }] }),
+  }, 120000);
+  if (!r.ok) throw new Error("anthropic " + r.status + " " + (r.json && r.json.error ? r.json.error.message : r.text.slice(0, 120)));
+  const parts = (r.json && r.json.content) || [];
+  const txt = parts.map((p) => (p && p.type === "text" ? p.text : "")).join("").trim();
+  if (!txt) throw new Error("anthropic 빈 응답");
+  return txt;
+}
+
+async function askOpenAI(model, prompt) {
+  /* 모델마다 받는 옵션이 달라 temperature·토큰 상한을 보내지 않는다(기본값 사용) */
+  const r = await fetchJSON("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + OPENAI_KEY, "content-type": "application/json" },
+    body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }] }),
+  }, 180000);
+  if (!r.ok) throw new Error("openai " + r.status + " " + (r.json && r.json.error ? r.json.error.message : r.text.slice(0, 120)));
+  const c = r.json && r.json.choices && r.json.choices[0];
+  const txt = ((c && c.message && c.message.content) || "").trim();
+  if (!txt) throw new Error("openai 빈 응답");
+  return txt;
+}
+
+async function askGemini(model, prompt) {
+  const r = await fetchJSON(
+    "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + encodeURIComponent(KEY),
+    {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: Object.assign(
+          { temperature: 0.4, maxOutputTokens: /2\.0-flash/.test(model) ? 8192 : 16000 },
+          /2\.5-flash/.test(model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}
+        ),
+      }),
+    }, 150000);
+  if (!r.ok || (r.json && r.json.error)) throw new Error("gemini " + r.status + " " + ((r.json && r.json.error && r.json.error.message) || r.text.slice(0, 120)));
+  const parts = (r.json && r.json.candidates && r.json.candidates[0] && r.json.candidates[0].content && r.json.candidates[0].content.parts) || [];
+  const txt = parts.map((p) => p.text || "").join("").trim();
+  if (!txt) throw new Error("gemini 빈 응답");
+  return txt;
+}
+
+/* 같은 자료를 세 회사에 똑같이 던지고, 각자 맡은 관점으로 답하게 한다 */
+async function runPanel(research, macro, quotes) {
+  const common = `당신은 한국 주식시장을 보는 애널리스트다. 아래 [오늘 수집한 사실]만을 근거로 답하라.
+여기에 없는 수치는 절대 지어내지 마라. 사라거나 팔라는 단정적 권유는 쓰지 마라.
+주식을 잘 모르는 사람도 알아듣게 쉬운 한국어로 쓴다. 전문용어는 쓰되 괄호로 짧게 풀어 준다.
+
+[오늘 수집한 사실]
+${research}
+
+[참고 시세(약 20분 지연)]
+${macro.join(", ")}
+${quotes.slice(0, 40).join(" / ")}
+`;
+  const seats = [
+    {
+      id: "claude", label: "Claude", role: "심층 추론", v: "v-dif", vt: "중립", key: ANTHROPIC_KEY,
+      pick: pickAnthropicModel, ask: askAnthropic,
+      task: "오늘 시장이 왜 그렇게 움직였는지, 원인과 결과를 따져서 6문장 이상으로 정리하라. 표면적인 뉴스 나열이 아니라 '무엇이 무엇을 밀었는지'를 밝혀라. 다른 설명이나 머리말 없이 본문만 쓴다.",
+    },
+    {
+      id: "openai", label: "ChatGPT", role: "교차 검증", v: "v-solo", vt: "검증", key: OPENAI_KEY,
+      pick: pickOpenAIModel, ask: askOpenAI,
+      task: "위 자료 안에서 서로 어긋나거나 근거가 약한 대목을 찾아 6문장 이상으로 짚어라. 숫자가 출처마다 다르면 그 사실을 적고, 확인된 것과 확인되지 않은 것을 나눠라. 다른 설명이나 머리말 없이 본문만 쓴다.",
+    },
+    {
+      id: "gemini", label: "Gemini", role: "종합·경계", v: "v-dif", vt: "경계", key: KEY,
+      pick: pickGeminiModel, ask: askGemini,
+      task: "오늘 자료를 종합하되 낙관에 기울지 말고, 앞으로 경계해야 할 것을 6문장 이상으로 정리하라. 무엇이 틀어지면 지금 판단이 바뀌는지 구체적으로 적어라. 다른 설명이나 머리말 없이 본문만 쓴다.",
+    },
+  ];
+
+  const results = await Promise.all(seats.map(async (st) => {
+    if (!st.key) { console.log("[panel] " + st.label + ": 열쇠 없음 — 건너뜀"); return null; }
+    try {
+      const model = await st.pick();
+      if (!model) throw new Error("쓸 수 있는 모델을 찾지 못함");
+      const t0 = Date.now();
+      const txt = await st.ask(model, common + "\n[맡은 역할] " + st.role + "\n" + st.task);
+      console.log("[panel] " + st.label + " ← " + model + " (" + txt.length + "자, " + Math.round((Date.now() - t0) / 1000) + "초)");
+      return { ai: st.label + " · " + model, role: st.role, concl: txt.replace(/\s+/g, " ").trim().slice(0, 2000), v: st.v, vt: st.vt };
+    } catch (e) {
+      console.log("[panel] " + st.label + " 실패: " + e.message);
+      return null;
+    }
+  }));
+
+  const rows = results.filter(Boolean);
+  __panelNames = rows.map((r) => r.ai).join(" | ");
+  console.log("[panel] 실제로 답한 AI: " + rows.length + "곳 (" + rows.map((r) => r.ai.split(" · ")[0]).join(", ") + ")");
+  return rows;
+}
+
+/* 실제 답변들을 놓고 합의와 이견을 정리한다 — 답한 곳이 2곳 미만이면 합의를 말하지 않는다 */
+async function panelConsensus(rows) {
+  if (rows.length < 2) return "";
+  const body = rows.map((r, i) => "[" + (i + 1) + "] " + r.ai.split(" · ")[0] + " (" + r.role + ")\n" + r.concl).join("\n\n");
+  const p = `아래는 서로 다른 회사의 AI ${rows.length}곳이 같은 자료를 보고 각자 쓴 글이다.
+공통으로 말한 것과 서로 갈린 것을 찾아 한국어 두 문장으로 정리하라.
+형식은 정확히 이렇게: <b>합의:</b> ... <b>이견:</b> ...
+없는 내용을 지어내지 말고, 투자 권유 표현은 쓰지 마라. 다른 말 없이 그 두 문장만 출력하라.
+
+${body}`;
+  try {
+    const txt = await gemini(p, { grounded: false, maxTokens: 2000 });
+    const m = String(txt).replace(/```[a-z]*|```/g, "").trim();
+    if (m.includes("합의") && m.length > 20) return m.slice(0, 900);
+  } catch (e) { console.log("[panel] 합의 정리 실패: " + e.message); }
+  return "";
+}
+
 function extractJson(txt) {
   const r = extractJsonBasic(txt);
   if (r) return r;
@@ -176,7 +356,8 @@ function vKV(a, min, max, minLen) {
   return ok ? a.map((m) => ({ k: m.k, v: m.v })) : null;
 }
 function vAiRows(a) {
-  if (!Array.isArray(a) || a.length !== 4) return null;
+  /* 실제로 답한 AI 수만큼만 칸이 생긴다 — 예전처럼 네 칸을 억지로 채우지 않는다 */
+  if (!Array.isArray(a) || a.length < 2 || a.length > 5) return null;
   /* 이 스크립트는 Gemini 한 모델만 호출한다. 네 칸에 다른 회사 이름을 붙이면
      "AI 네 곳이 각각 답했다"는 거짓이 된다 — 역할 이름만 쓴다(2026-10-31). */
   const names = ["사실 수집·출처", "심층 추론", "반대 근거 점검", "교차 확인"];
@@ -280,6 +461,9 @@ ${quotes.length ? "종목: " + quotes.slice(0, 45).join(" / ") : ""}`;
     __bail();
   }
 
+  // --- 1.5단계: AI 패널 — Claude·ChatGPT·Gemini 를 실제로 호출한다 ---
+  const panelP = runPanel(research, macro, quotes).catch((e) => { console.log("[panel] 전체 실패: " + e.message); return []; });
+
   // --- 2단계: 스키마 생성 ---
   const buildPrompt = `당신은 한국 주식시장 애널리스트다. 아래 [리서치]에 담긴 사실만을 근거로 대시보드 콘텐츠를 만든다. 리서치에 없는 수치는 절대 지어내지 말고, 없으면 정성적으로 서술하라. 과장·확정적 매매권유 금지. 오늘은 ${today}, ${when}이다.
 
@@ -335,7 +519,13 @@ stocks는 정확히 20개: g:"buy" 10개 + g:"avoid" 10개.
   const nBrief = vBrief(gen.brief);
   const nScen = vScenarios(gen.scenarios);
   const nMon = vKV(gen.monitor, 5, 9, 30);
-  const nAi = vAiRows(gen.aiRows);
+  /* 실제로 답한 AI가 2곳 이상이면 그 답을 쓴다. 한 곳 이하면 Gemini 가 만든 칸을 쓰되,
+     회사 이름을 붙이지 않으므로 "네 곳이 답했다"는 거짓은 생기지 않는다. */
+  const panelRows = await panelP;
+  const panelOk = Array.isArray(panelRows) && panelRows.length >= 2;
+  const nAi = panelOk ? vAiRows(panelRows) : vAiRows(gen.aiRows);
+  const panelCons = panelOk ? await panelConsensus(panelRows) : "";
+  console.log("[panel] 화면에 쓰는 칸: " + (panelOk ? "실제 호출 " + panelRows.length + "곳" : "Gemini 생성 칸(역할만 표기)"));
   const nStocks = vStocks(gen.stocks);
 
   const report = {
@@ -351,7 +541,7 @@ stocks는 정확히 20개: g:"buy" 10개 + g:"avoid" 10개.
     updated: today,
     brief: nBrief || base.brief,
     scenarios: nScen || base.scenarios,
-    consensusTxt: isStr(gen.consensusTxt, 60) ? gen.consensusTxt : base.consensusTxt,
+    consensusTxt: isStr(panelCons, 40) ? panelCons : (isStr(gen.consensusTxt, 60) ? gen.consensusTxt : base.consensusTxt),
     monitor: nMon || base.monitor,
     globalNote: isStr(gen.globalNote, 200) ? gen.globalNote : base.globalNote,
     aiRows: nAi || base.aiRows,
