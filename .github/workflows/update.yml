@@ -46,6 +46,9 @@ jobs:
       - name: content.json 갱신
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # AI 패널: 세 회사를 실제로 호출한다. 없으면 그 칸은 비워지고 화면이 사실대로 알린다.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SESSION: ${{ steps.sess.outputs.value }}
         run: node build-content.js
 
@@ -72,7 +75,7 @@ jobs:
 
       - name: 변경분 커밋·푸시
         run: |
-          if git diff --quiet -- content.json og-image.png; then
+          if [ -z "$(git status --porcelain -- content.json og-image.png last-run.json)" ]; then
             echo "변경 없음 — 커밋 생략"
             exit 0
           fi
@@ -80,6 +83,6 @@ jobs:
           git config user.email "realchm@users.noreply.github.com"
           SUFFIX=""
           if [ "${{ steps.sess.outputs.value }}" = "close" ]; then SUFFIX=" (마감)"; fi
-          git add content.json og-image.png
+          git add content.json og-image.png last-run.json
           git commit -m "auto: 고품질 분석 갱신 $(TZ=Asia/Seoul date +%F)${SUFFIX}"
           git push
