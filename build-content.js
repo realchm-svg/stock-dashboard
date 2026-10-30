@@ -85,10 +85,15 @@ async function gemini(prompt, { grounded = false, maxTokens = 8192 } = {}) {
   for (const model of MODELS) {
     const body = {
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature: grounded ? 0.2 : 0.45, maxOutputTokens: maxTokens },
+      generationConfig: {
+        temperature: grounded ? 0.2 : 0.45,
+        /* 모델마다 출력 상한이 달라 넘기면 400이 난다 — 2.0-flash는 8192가 한계 */
+        maxOutputTokens: Math.min(maxTokens, /2\.0-flash/.test(model) ? 8192 : 65000),
+      },
     };
-    /* 2.5 계열은 생각 토큰이 출력 한도를 먹어 응답이 잘린다 — 생각 끄기 */
-    if (/2\.5/.test(model)) body.generationConfig.thinkingConfig = { thinkingBudget: 0 };
+    /* 2.5 계열은 생각 토큰이 출력 한도를 먹어 응답이 잘린다 — flash는 끄고 pro는 최소치로 */
+    if (/2\.5-flash/.test(model)) body.generationConfig.thinkingConfig = { thinkingBudget: 0 };
+    else if (/2\.5-pro/.test(model)) body.generationConfig.thinkingConfig = { thinkingBudget: 128 };
     if (grounded) body.tools = [{ google_search: {} }];
     else body.generationConfig.responseMimeType = "application/json";
     try {
