@@ -216,7 +216,7 @@ img,canvas,svg,video{max-width:100%;height:auto}
 
 .herolead{font-size:var(--fs-lg);font-weight:700;line-height:var(--lh-tight);color:var(--ink);
   margin:0 0 var(--sp-1);max-width:var(--measure);overflow-wrap:anywhere;word-break:keep-all}
-.herolead .hpt{white-space:nowrap}
+.herolead .hpt{white-space:nowrap;font-size:var(--fs-xl);font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
 .herometa{font-size:var(--fs-xs);color:var(--muted);margin:0 0 var(--sp-3);overflow-wrap:anywhere}
 .sumbrief{font-size:var(--fs-sm);color:var(--ink);line-height:var(--lh-long);
   margin:var(--sp-3) 0 0;max-width:var(--measure);overflow-wrap:anywhere;word-break:keep-all;
@@ -323,9 +323,9 @@ img,canvas,svg,video{max-width:100%;height:auto}
 .dbox li{margin:var(--sp-1) 0}
 .dbox .risk{font-size:var(--fs-sm);color:var(--soft-red-ink)}
 .dmeta{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3);align-items:center}
-.mbadge{font-size:var(--fs-xs);font-weight:700;padding:3px 9px;border-radius:7px;
+.mbadge{font-size:var(--fs-xs);font-weight:700;padding:3px 9px;border-radius:var(--radius-sm);
   background:var(--soft-neutral-bg);color:var(--soft-neutral-ink)}
-.aibadge{font-size:var(--fs-xs);font-weight:700;padding:3px 9px;border-radius:7px;
+.aibadge{font-size:var(--fs-xs);font-weight:700;padding:3px 9px;border-radius:var(--radius-sm);
   background:var(--soft-violet-bg);color:var(--soft-violet-ink)}
 .conf-h{background:var(--soft-green-bg);color:var(--soft-green-ink)}
 .conf-m{background:var(--soft-amber-bg);color:var(--soft-amber-ink)}
@@ -370,7 +370,10 @@ img,canvas,svg,video{max-width:100%;height:auto}
   transition:border-color .1s ease,background .1s ease;min-width:0;min-height:var(--tap);
   text-align:left;background:var(--card);color:inherit;width:100%;font:inherit}
 .rrow:hover{border-color:var(--accent);background:var(--accent-soft)}
-.rlite{font-size:var(--fs-md);flex:none}
+.rlite{flex:none;width:12px;height:12px;border-radius:50%;background:var(--grey);box-shadow:0 0 0 3px var(--soft-neutral-bg)}
+.rlite.lab-g{background:var(--green);box-shadow:0 0 0 3px var(--soft-green-bg)}
+.rlite.lab-y{background:var(--amber);box-shadow:0 0 0 3px var(--soft-amber-bg)}
+.rlite.lab-r{background:var(--sig-danger);box-shadow:0 0 0 3px var(--soft-red-bg)}
 /* .rrow 는 <button> 이므로 내부가 <span> 이다 — 줄 단위 배치를 위해 block 을 명시한다
    (button 의 콘텐츠 모델은 phrasing content 라 div 를 넣지 않는다). */
 .rmain{display:block;flex:1 1 auto;min-width:0}
@@ -382,6 +385,7 @@ img,canvas,svg,video{max-width:100%;height:auto}
 .rai{font-size:var(--fs-xs);font-weight:700;color:var(--soft-violet-ink);
   background:var(--soft-violet-bg);border-radius:6px;padding:2px 7px;white-space:nowrap;display:inline-block}
 .rsec{font-size:var(--fs-xs);color:var(--grey);display:block;margin-top:2px;overflow-wrap:anywhere}
+.rright,.livep,.tick .v,.tick .c,.wltable td,.wltable th,.gtable td,.aicmp td,.gnum,.mon .m .v{font-variant-numeric:tabular-nums}
 /* 신호등을 색·이모지에만 싣지 않는다 — 종목명 줄에 낱말을 함께 적는다(줄이 늘지 않는다) */
 .rlab{font-weight:600;font-size:var(--fs-xs);margin-left:var(--sp-1);white-space:nowrap}
 .rlab.lab-g{color:var(--soft-green-ink)}
@@ -403,7 +407,9 @@ img,canvas,svg,video{max-width:100%;height:auto}
 .v-con{background:var(--soft-green-bg);color:var(--soft-green-ink)}
 .v-dif{background:var(--soft-amber-bg);color:var(--soft-amber-ink)}
 .v-solo{background:var(--soft-neutral-bg);color:var(--soft-neutral-ink)}
-.consensus-row{margin-top:var(--sp-3);font-size:var(--fs-sm);padding:var(--sp-2) var(--sp-3);
+.consensus-row b{display:block;margin-top:var(--sp-2);color:var(--accent);font-size:var(--fs-xs);letter-spacing:.3px}
+.consensus-row b:first-child{margin-top:0}
+.consensus-row{max-width:var(--measure);margin-top:var(--sp-3);font-size:var(--fs-sm);padding:var(--sp-2) var(--sp-3);
   border-radius:var(--radius-sm);background:var(--accent-soft);border:1px solid var(--accent-line);
   line-height:var(--lh-long)}
 
@@ -412,7 +418,7 @@ img,canvas,svg,video{max-width:100%;height:auto}
    ========================================================================= */
 .profgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--sp-2);margin-bottom:var(--sp-3)}
 .profbtn{cursor:pointer;border:1.5px solid var(--line);background:var(--bg);color:inherit;font:inherit;
-  border-radius:11px;padding:var(--sp-2) var(--sp-3);text-align:left;min-height:48px;min-width:0}
+  border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);text-align:left;min-height:48px;min-width:0}
 .profbtn .pt{display:block;font-weight:700;font-size:var(--fs-base)}
 .profbtn .pd{display:block;font-size:var(--fs-xs);color:var(--muted);margin-top:2px}
 .profbtn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:var(--focus-ring)}
@@ -447,7 +453,7 @@ img,canvas,svg,video{max-width:100%;height:auto}
 .mon .m[open]>summary::after{content:"⌃";transform:translateY(-25%)}
 .mon .m>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:var(--radius-sm)}
 .mon .m .k{font-size:var(--fs-xs);color:var(--muted)}
-.mon .m .v{font-size:var(--fs-sm);font-weight:400;color:var(--muted);
+.mon .m .v{font-size:var(--fs-sm);font-weight:400;color:var(--ink);
   padding:0 var(--sp-3) var(--sp-3);line-height:var(--lh-long);max-width:var(--measure)}
 
 /* =========================================================================
@@ -532,12 +538,12 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
 }
 @media(max-width:430px){
   /* 업종 지도 타일을 조금 좁혀 줄 수를 줄인다(인라인 grid 지정을 덮는다) */
-  #heatbody>div{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))!important}
+  #heatbody>div{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))!important}
   .wrap{padding:10px}
   .card{padding:var(--sp-3);border-radius:12px;margin-bottom:var(--sp-3)}
   .topbar{padding:var(--sp-3);border-radius:12px}
   .ticks{grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px}
-  .title h1{font-size:var(--fs-md)}
+  .title h1{font-size:var(--fs-lg)}
   .lookbar{gap:6px}
   .lookbar input{flex:1 1 100%}
   .lookbar button{flex:1 1 auto}
@@ -601,8 +607,8 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
 
   <header class="topbar">
     <div class="title">
-      <h1><span aria-hidden="true">📈</span> 국내증시 대시보드</h1>
-      <span class="badge">⚠ 정보 도구 · 투자자문 아님</span>
+      <h1>국내증시 대시보드</h1>
+      <span class="badge">정보 도구 · 투자자문 아님</span>
       <span class="badge" id="modebadge" style="background:#eef1fe;color:#3b3a86;border-color:#d9e0fb"></span>
     </div>
     <!-- 상태줄: 이 화면이 언제 기준이고 지금 정상인가 -->
@@ -639,7 +645,7 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
 
   <!-- 2. 왜 그렇게 움직였나 — 오늘 이 움직임을 만든 일이 무엇인가 -->
   <section class="card" id="sec-why" aria-labelledby="h-why">
-    <h2 id="h-why"><span class="dot" aria-hidden="true" style="background:var(--up)"></span>왜 그렇게 움직였나</h2>
+    <h2 id="h-why"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>왜 그렇게 움직였나</h2>
     <div class="sub">오늘의 움직임을 만든 일들을 짧게 정리했습니다.</div>
     <ul class="brief" id="brief"></ul>
     <details class="note">
@@ -652,7 +658,13 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
     </details>
   </section>
 
-  <!-- 3. 지금 분위기와 시장 지도 — 심리 게이지 · 업종 지도 · 밤사이 해외 -->
+  <!-- 3. 내가 담아둔 종목 (watchcard 모듈이 slot-watch 자리에 삽입)
+       아침에 가장 먼저 보는 것이 본인 종목이라 분위기·지도보다 앞에 둔다 -->
+  <section class="secgroup" id="sec-mine" aria-labelledby="h-mine" aria-label="내가 담아둔 종목">
+    <div id="slot-watch" hidden></div>
+  </section>
+
+  <!-- 4. 지금 분위기와 시장 지도 — 심리 게이지 · 업종 지도 · 밤사이 해외 -->
   <section class="secgroup" id="sec-mood" aria-labelledby="h-mood">
     <h2 id="h-mood">지금 분위기와 시장 지도</h2>
     <div class="sub">시장이 달아올랐는지 식었는지, 어느 업종이 움직였는지 봅니다.</div>
@@ -666,16 +678,11 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
     </details>
   </section>
 
-  <!-- 4. 내가 담아둔 종목 (watchcard 모듈이 slot-watch 자리에 삽입) -->
-  <section class="secgroup" id="sec-mine" aria-labelledby="h-mine" aria-label="내가 담아둔 종목">
-    <div id="slot-watch" hidden></div>
-  </section>
-
   <!-- 5. 종목 찾아보기 -->
   <section class="card" id="sec-lookup" aria-labelledby="h-lookup">
     <h2 id="h-lookup"><span class="dot" aria-hidden="true" style="background:var(--green)"></span>종목 찾아보기</h2>
     <div class="sub">종목 이름이나 6자리 코드를 넣어 보세요. 아래 목록의 행을 눌러도 여기에 나옵니다.</div>
-    <p class="termnote"><b>신호등</b>은 <span aria-hidden="true">🟢</span> 관심(지켜볼 만함) · <span aria-hidden="true">🟡</span> 보통 · <span aria-hidden="true">🔴</span> 주의(점검 필요)를 뜻하는 정리용 표시입니다. <b>매수·매도 신호가 아닙니다.</b></p>
+    <p class="termnote"><b>신호등</b>은 관심(지켜볼 만함) · 보통 · 주의(점검 필요)를 뜻하는 정리용 표시입니다. <b>매수·매도 신호가 아닙니다.</b></p>
     <div class="lookbar">
       <input id="q" list="stocklist" placeholder="예: 삼성전자, 005930, SK하이닉스, 카카오…" autocomplete="off" aria-label="종목명 또는 6자리 코드 검색">
       <datalist id="stocklist"></datalist>
@@ -683,7 +690,7 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
     </div>
     <div class="qhint" id="qhint" role="status" aria-live="polite" hidden></div>
     <div class="chips" id="chips"></div>
-    <div class="livebar" id="livestatus" role="status" aria-live="polite">💹 시세를 불러오는 중…</div>
+    <div class="livebar" id="livestatus" role="status" aria-live="polite">시세를 불러오는 중…</div>
     <div class="detail" id="detail"></div>
     <details class="note">
       <summary>어디까지 찾을 수 있나 — 코스피는 이름·코드 모두, 코스닥은 일부만</summary>
@@ -700,7 +707,6 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
     <h2 id="h-picks"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>AI가 오늘 자주 짚은 종목 20</h2>
     <div class="sub">AI 4곳이 오늘 이름을 자주 꺼낸 순서입니다. <b>사라는 뜻도, 팔라는 뜻도 아닙니다.</b></div>
     <p class="termnote"><b>‘근거 확실 · 근거 보통 · 근거 약함’</b>은 그렇게 본 자료가 얼마나 뚜렷한지를 뜻합니다. AI 4곳의 찬반 투표 결과가 아닙니다.</p>
-    <p class="termnote">한 줄에 <b>숫자가 두 개</b> 보일 수 있습니다. <b>설명 속 등락률은 분석을 만든 시점(대개 어제 마감) 기준</b>이고, <b>오른쪽 끝 숫자가 지금(약 20분 늦은) 값</b>입니다. 두 값이 달라도 잘못된 것이 아닙니다.</p>
     <div class="picksgrid">
       <div class="pickcol">
         <h3><span class="dot" aria-hidden="true" style="background:var(--green)"></span>AI가 눈여겨본 10곳</h3>
@@ -716,6 +722,7 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
     <details class="note">
       <summary>두 묶음은 어떻게 나눴나 — 회사의 좋고 나쁨을 판정한 것이 아닙니다</summary>
       <div class="dbody">
+        <p>한 줄에 <b>숫자가 두 개</b> 보일 수 있습니다. 설명 속 등락률은 분석을 만든 시점(대개 어제 마감) 기준이고, 오른쪽 끝 숫자가 지금(약 20분 늦은) 값입니다. 두 값이 달라도 잘못된 것이 아닙니다.</p>
         <p>AI 4곳이 오늘 모은 공개 보도와 증권사 리포트에서, 어느 쪽 이야기가 더 많았는지로 나눈 것입니다. 회사의 좋고 나쁨을 판정한 것이 아닙니다.</p>
         <p>‘조심스럽게 본 10곳’에 있다고 해서 나쁜 회사라는 뜻이 아니고, ‘눈여겨본 10곳’에 있다고 해서 오른다는 뜻도 아닙니다. 오늘 어떤 이야기가 돌았는지를 보여줄 뿐입니다.</p>
         <p>확신도는 그 이야기를 받쳐 주는 자료가 얼마나 뚜렷한지를 네 단계로 환산한 값입니다. 종목을 눌러 자세히 보면 ‘확신도 상·중·하’로 표시됩니다.</p>
@@ -799,7 +806,7 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
           <dt>상장</dt><dd>회사 주식을 누구나 시장에서 사고팔 수 있게 등록한 것입니다.</dd>
           <dt>이동평균</dt><dd>최근 며칠치 가격의 평균을 이어 그린 선입니다. 하루하루의 출렁임을 걷어내고 흐름만 보려고 씁니다.</dd>
           <dt>확신도</dt><dd>그렇게 본 근거 자료가 얼마나 뚜렷한지입니다. 얼마나 많이 오를지와는 관계가 없고, AI의 찬반 투표 결과도 아닙니다.</dd>
-          <dt>신호등</dt><dd>이 화면이 종목을 세 갈래로 나눠 표시한 것입니다. <span aria-hidden="true">🟢</span> 관심 · <span aria-hidden="true">🟡</span> 보통 · <span aria-hidden="true">🔴</span> 주의이며, 매수·매도 신호가 아닙니다.</dd>
+          <dt>신호등</dt><dd>이 화면이 종목을 세 갈래로 나눠 표시한 것입니다. 관심 · 보통 · 주의이며, 매수·매도 신호가 아닙니다.</dd>
           <dt>손실 한도(손절)</dt><dd>‘여기까지 내려가면 그만두겠다’고 미리 정해 두는 선입니다. 이 화면은 그 값을 정해 주지 않습니다.</dd>
         </dl>
       </div>
@@ -808,7 +815,6 @@ input{min-height:var(--tap);font-family:inherit;font-size:var(--fs-base);
   </section>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <script>
 /* ===== 시세(스냅샷) ===== */
 /* 값은 실제 데이터가 도착했을 때만 채운다(하드코딩 스냅샷을 현재값으로 보여주지 않는다).
@@ -1040,7 +1046,12 @@ const GLOSS_LIST=[
   ["비둘기파","금리를 내리자는 쪽"],
   ["관망","지켜보며 기다리는 것"],
   ["조정","올랐던 값이 잠시 내리는 것"],
-  ["과매수","너무 많이 사들여 값이 앞서 나간 상태"]
+  ["과매수","너무 많이 사들여 값이 앞서 나간 상태"],
+  ["어닝 서프라이즈","실적이 예상보다 훨씬 잘 나온 것"],
+  ["유가증권시장","코스피 시장의 정식 이름"],
+  ["낙폭","내린 폭"],
+  ["디스카운트","비슷한 회사보다 싸게 매겨진 것"],
+  ["재평가","시장이 값을 다시 매기는 것"]
 ].sort((a,b)=>b[0].length-a[0].length);
 
 /* --- 3) 말투 통일: 「~했다/~이다」 → 「~했습니다/~입니다」 ---
@@ -1090,21 +1101,26 @@ function glossify(html){
     /* 한 덩어리에 풀이를 두 번까지만 붙인다 — 세 번을 넘어가면 괄호가 본문을 밀어내
        읽기가 오히려 어려워지고 화면도 길어진다. */
     const MAXG=2;
+    /* 짝 단어는 한쪽만 설명되면 설명 안 한 쪽이 더 어려워 보인다 */
+    const PAIRW={"순매수":"순매도","순매도":"순매수","매파":"비둘기파","비둘기파":"매파"};
     const used={}; let n=0, out="", i=0;
     while(i<s.length){
       if(s[i]==="<"){ const e=s.indexOf(">",i); if(e>i){ out+=s.slice(i,e+1); i=e+1; continue; } }
-      let hit=null;
-      if(n<MAXG) for(let g=0; g<GLOSS_LIST.length; g++){
+      let hit=null, pairFree=false;
+      for(let g=0; g<GLOSS_LIST.length; g++){
         const w=GLOSS_LIST[g][0];
         if(used[w]) continue;
-        if(s.startsWith(w,i)){ hit=GLOSS_LIST[g]; break; }
+        if(!s.startsWith(w,i)) continue;
+        const pr=!!(PAIRW[w] && used[PAIRW[w]]);
+        if(n>=MAXG && !pr) continue;
+        hit=GLOSS_LIST[g]; pairFree=pr; break;
       }
       if(hit){
         used[hit[0]]=1;
         out+=hit[0];
         /* 이미 괄호로 설명이 붙어 있으면 겹쳐 쓰지 않는다 */
         const nx=s[i+hit[0].length];
-        if(nx!=="(" && nx!=="（"){ out+='<span class="gtip">('+hit[1]+')</span>'; n++; }
+        if(nx!=="(" && nx!=="（"){ out+='<span class="gtip">('+hit[1]+')</span>'; if(!pairFree) n++; }
         i+=hit[0].length;
         continue;
       }
@@ -1127,9 +1143,9 @@ function asofChip(){
   const label=m?(+m[2]+"월 "+(+m[3])+"일 분석 기준"):"분석 시점 기준";
   return '<span class="asofchip">'+label+'</span>';
 }
-const liteTxt={g:'<span aria-hidden="true">🟢</span> 관심',
-               y:'<span aria-hidden="true">🟡</span> 보통',
-               r:'<span aria-hidden="true">🔴</span> 주의'};
+const liteTxt={g:'관심',
+               y:'보통',
+               r:'주의'};
 const confCls={"상":"conf-h","중":"conf-m","하":"conf-l"};
 
 /* ===== 라이브 시세 (Google Sheet + GOOGLEFINANCE, 약 20분 지연) ===== */
@@ -1221,7 +1237,9 @@ let liveState="loading";      // loading | ok | fail
 let liveAt=0;                 // 마지막으로 시세를 성공적으로 받은 시각
 let liveLoading=false;        // 동시 호출 가드(경쟁 조건)
 const LIVE_STALE_MS=30*60*1000;
-function liveStale(v){ return !!(v && v.ts && (Date.now()-v.ts > LIVE_STALE_MS)); }
+/* 새로 고치려다 실패했으면 30분을 기다리지 않고 곧바로 '옛 값'으로 표시한다 —
+   배너만 실패를 말하고 숫자는 살아 있으면 지금 값으로 읽힌다(실측) */
+function liveStale(v){ if(!(v && v.ts)) return false; return liveState==="fail" || (Date.now()-v.ts > LIVE_STALE_MS); }
 function hhmm(ms){ try{ const d=new Date(ms); return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }catch(e){ return ""; } }
 /* 등락률 표기 규칙 하나로 고정: 소수 2자리, 부호는 화살표로만, 0은 '보합' */
 function rateCls(r){ return (typeof r!=="number"||!isFinite(r))?"":(r>0?"up":(r<0?"down":"flat")); }
@@ -1240,7 +1258,9 @@ function liveStr(code){
   if(!v) return `<span class="livep livena">${liveMissTxt()}</span>`;
   const rt=rateTxt(v.rate), cls=rateCls(v.rate);
   const stale=liveStale(v)?" stale":"";
-  return `<span class="livep ${cls}${stale}">${v.price.toLocaleString()}원${rt?" "+rt:""}</span>`;
+  /* 색만으로 '옛 값'을 말하지 않는다 — 회색은 흑백 인쇄·색각이상·낭독에서 사라진다 */
+  const smark=stale?' <span class="stalemark">(옛 값)</span>':"";
+  return `<span class="livep ${cls}${stale}">${v.price.toLocaleString()}원${rt?" "+rt:""}${smark}</span>`;
 }
 function liveDetail(code){
   const v=liveMap[pad6(code)];
@@ -1248,11 +1268,11 @@ function liveDetail(code){
     let t="이 종목은 실시간 시세를 제공하지 않습니다.";
     if(liveState==="loading") t="시세를 확인하는 중입니다…";
     else if(liveState==="fail") t="지금은 시세를 불러올 수 없습니다. 잠시 후 다시 확인해 주세요.";
-    return `<div class="livebox none">💹 ${t}</div>`;
+    return `<div class="livebox none">${t}</div>`;
   }
   const cls=rateCls(v.rate), rt=rateTxt(v.rate);
   const stale=liveStale(v);
-  const lk=stale?("💹 "+hhmm(v.ts)+" 기준 · 그 뒤로 갱신 안 됨"):"💹 약 20분 전 가격";
+  const lk=stale?(""+hhmm(v.ts)+" 기준 · 그 뒤로 갱신 안 됨"):"약 20분 전 가격";
   return `<div class="livebox${stale?" stalebox":""}"><span class="lk">${lk}</span> <b class="${cls}" style="font-size:18px">${v.price.toLocaleString()}원</b> `+
     (rt?`<span class="${cls}" style="font-weight:700">${rt}</span>`:`<span class="livena">오늘 등락은 확인하지 못했습니다</span>`)+`</div>`;
 }
@@ -1292,8 +1312,11 @@ function briefLi(b){
 }
 function rerenderContent(){
   /* 브리핑: 첫 항목만 펼치고 나머지는 접는다(li 3개가 모바일에서 1,083px 이었다) */
-  const bs=arr(brief), brest=bs.slice(1);
-  setHTML("brief", (bs.length?briefLi(bs[0]):"")+(brest.length
+  const bs=arr(brief);
+  /* '지금 상황'은 바로 위 '오늘 시장' 요약과 같은 글이다 — 이 칸은 '왜 그랬나'부터 펼친다 */
+  let bi=bs.findIndex(x=>x&&x.t==="동인"); if(bi<0) bi=0;
+  const brest=bs.filter((_,i)=>i!==bi);
+  setHTML("brief", (bs.length?briefLi(bs[bi]):"")+(brest.length
     ? `<li class="bfoldli"><details class="note"><summary>나머지 ${brest.length}가지도 보기</summary><div class="dbody"><ul class="brief">${brest.map(briefLi).join("")}</ul></div></details></li>`
     : ""));
   /* 시나리오: 제목과 강세/기본/약세 뱃지는 항상 보이고 설명만 접는다.
@@ -1306,7 +1329,6 @@ function rerenderContent(){
   setHTML("consensus", glossify(esc(toneText(consensusTxt||"")).replace(/&lt;(\/?)b&gt;/g,"<$1b>")));
   /* 모니터링: 1열 아코디언 + 위 3개만 펼침 */
   setHTML("monitor", arr(monitor).map((m,i)=>`<details class="m"${i<3?" open":""}><summary>${esc(labelWord(m&&m.k||""))}</summary><div class="v">${soft(m&&m.v||"")}</div></details>`).join(""));
-  setHTML("stocklist", arr(universe).map(s=>`<option value="${esc(s&&s.name||"")}">${esc(s&&s.code||"")} · ${esc(s&&s.sector||"")}</option>`).join(""));
   renderLists();
   if(curStock){ const fresh=arr(stocks).find(x=>x&&x.code===curStock.code); renderDetail(fresh||curStock); }
 }
@@ -1317,6 +1339,11 @@ async function loadContent(){
     if(!r.ok){ console.warn("[분석 콘텐츠] HTTP "+r.status+" — content.json을 읽지 못했습니다."); window.__contentFail=true; contentState="fail"; renderContentGate(); if(window.__sumUpdate)window.__sumUpdate(); return; }
     const c=await r.json();
     if(!c || typeof c!=="object" || Array.isArray(c)) throw new Error("content shape");
+    /* 핵심 섹션이 하나라도 비면 '도착'으로 치지 않는다 — 비면 내장 기본값(5월 스냅샷)이
+       오늘 날짜를 달고 그대로 남는다(실측: {"updated":"2026-10-30"} 만 와도 5월 내용이 떴다) */
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(c.updated||""))) throw new Error("updated 없음");
+    if(!Array.isArray(c.brief) || !c.brief.length) throw new Error("brief 없음");
+    if(!Array.isArray(c.stocks) || !c.stocks.length) throw new Error("stocks 없음");
     if(Array.isArray(c.brief)) brief=c.brief;
     if(Array.isArray(c.scenarios)) scenarios=c.scenarios;
     if(Array.isArray(c.stocks)) stocks=c.stocks;
@@ -1387,9 +1414,9 @@ function macroTile(key, v, at, showRate){
   if(e) e.textContent = (price===null) ? "—" : Math.round(price).toLocaleString();
   if(!c) return;
   if(price===null){ c.textContent = window.__macroFail?"불러오지 못함":"확인 불가"; c.className="c"; return; }
-  if(showRate && rate!==null){ c.textContent=rateTxt(rate)+" · "+hhmm(at)+" 기준"; c.className="c "+(rateCls(rate)||""); return; }
+  if(showRate && rate!==null){ c.textContent=rateTxt(rate); c.className="c "+(rateCls(rate)||""); return; }
   if(showRate){ c.textContent="오늘 등락 확인 불가 · "+hhmm(at)+" 기준"; c.className="c"; return; }
-  c.textContent=hhmm(at)+" 기준 (약 20분 지연)"; c.className="c";
+  c.textContent=hhmm(at)+" 기준"; c.className="c";
 }
 /* 10행을 다 펼치면 이 섹션 하나가 모바일에서 2,500px 이다 —
    처음엔 3행만 보여 주고 나머지는 버튼으로 연다. rrow() 는 그대로 쓴다. */
@@ -1445,7 +1472,7 @@ async function loadLive(){
   if(liveLoading) return;              /* 동시 호출 가드 — 응답이 뒤엉켜 옛 값이 새 값을 덮는 것을 막는다 */
   liveLoading=true;
   const st=$("livestatus");
-  if(st){st.className="livebar";st.textContent="💹 시세를 불러오는 중…";}
+  if(st){st.className="livebar";st.textContent="시세를 불러오는 중…";}
   try{
     let m={};
     if(inCowork()){
@@ -1472,7 +1499,7 @@ async function loadLive(){
     const now=Date.now();
     Object.keys(m).forEach(k=>{ m[k].ts=now; });
     liveMap=m; liveAt=now; liveState="ok";     /* 병합이 아니라 교체 */
-    liveBar("ok", `💹 시세 ${n}종목 · ${hhmm(now)} 받음 (약 20분 지연) ·`);
+    liveBar("ok", `시세 ${n}종목 · ${hhmm(now)} 받음 (약 20분 지연) ·`);
   }catch(e){
     console.warn("[시세] 불러오기 실패:", e, inCowork()?"(Cowork 커넥터 경로)":(backendOn()?"(백엔드 경로)":"(공개 구글시트 CSV 경로)"));
     liveState="fail";
@@ -1532,7 +1559,29 @@ function chartBlock(){
 function destroyChart(){ if(pxChartObj){ try{pxChartObj.destroy();}catch(e){} pxChartObj=null; } }
 let pxChartObj=null;
 function ma(arr,p){ return arr.map((_,i)=> i<p-1?null:+(arr.slice(i-p+1,i+1).reduce((a,b)=>a+b,0)/p).toFixed(0)); }
+/* Chart.js(208KB)는 차트를 실제로 쓰는 환경에서만 받아 온다 —
+   공개 화면은 chartOn()이 false 라 한 바이트도 받지 않는다. 차단 스크립트였을 때
+   content.json 요청이 480ms 뒤에야 시작됐다(실측). */
+let chartLibP=null;
+function ensureChartLib(){
+  if(window.Chart) return Promise.resolve(true);
+  if(chartLibP) return chartLibP;
+  chartLibP=new Promise(function(res){
+    var sc=document.createElement("script");
+    sc.src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js";
+    sc.integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi";
+    sc.crossOrigin="anonymous";
+    sc.onload=function(){res(!!window.Chart);};
+    sc.onerror=function(){chartLibP=null;res(false);};
+    document.head.appendChild(sc);
+  });
+  return chartLibP;
+}
 function drawChart(labels,closes){
+  if(!$("pxchart")) return;
+  ensureChartLib().then(function(ok){ if(ok) drawChartNow(labels,closes); });
+}
+function drawChartNow(labels,closes){
   const el=$("pxchart"); if(!el||!window.Chart) return;
   destroyChart();
   pxChartObj=new Chart(el,{type:"line",data:{labels:labels,datasets:[
@@ -1586,7 +1635,7 @@ async function loadChart(s){
 }
 function aiRowHtml(){
   /* 호출 경로가 없으면 내부 용어를 노출하는 대신 아무것도 만들지 않는다 */
-  return (aiOn()||backendOn())?`<div class="aibtnrow"><button type="button" id="aibtn" class="aibtn">🤖 이 종목, AI에게 지금 물어보기</button></div>`:``;
+  return (aiOn()||backendOn())?`<div class="aibtnrow"><button type="button" id="aibtn" class="aibtn">이 종목, AI에게 지금 물어보기</button></div>`:``;
 }
 /* 부드러운 스크롤은 '움직임 줄이기' 설정에서는 쓰지 않는다 */
 function reduceMotion(){try{return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);}catch(e){return false;}}
@@ -1614,15 +1663,15 @@ function renderDetail(s,opts){
   const ptLabel=s.watch?"눈여겨본 대목":(s.g==="buy"?"좋게 본 이유":"조심스럽게 본 이유");
   const pts=arr(s.pts), lite=liteTxt[s.light]||"판정 없음";
   setHTML("detail",
-   `<div class="dhead"><div><h3 class="dnm">${esc(s.name)}</h3><div class="dcode">${s.code} · ${esc(s.sector)} · ${s.watch?'<span aria-hidden="true">🔎</span> 검색해서 찾은 종목':(s.g==="buy"?'<span aria-hidden="true">🟢</span> AI가 눈여겨본 곳':'<span aria-hidden="true">🔴</span> AI가 조심스럽게 본 곳')}</div></div>`+
+   `<div class="dhead"><div><h3 class="dnm">${esc(s.name)}</h3><div class="dcode">${s.code} · ${esc(s.sector)} · ${s.watch?'검색해서 찾은 종목':(s.g==="buy"?'AI가 눈여겨본 곳':'AI가 조심스럽게 본 곳')}</div></div>`+
    `<span class="lite lite-${esc(s.light||"y")}">${lite}</span></div>`+
    /* 요약 속 숫자는 '분석 시점' 값이고 바로 아래 시세 상자는 '지금(약 20분 지연)' 값이다 —
       라벨 없이 나란히 두면 서로 다른 두 등락률이 모순처럼 보인다. 칩으로 기준을 밝힌다. */
-   (s.sum?`<div class="dsum">${asofChip()}💡 ${soft(s.sum)}</div>`:``)+
+   (s.sum?`<div class="dsum">${asofChip()}${soft(s.sum)}</div>`:``)+
    liveDetail(s.code)+
    gaugeHtml(s.score,s.tone)+
    /* 걱정거리는 접지 않는다 — 접힌 곳에 두면 읽히지 않는다 */
-   (s.risk?`<p class="drisk">⚠ <b>가장 걱정되는 점</b> — ${soft(s.risk)}</p>`:``)+
+   (s.risk?`<p class="drisk"><b>가장 걱정되는 점</b> — ${soft(s.risk)}</p>`:``)+
    /* 근거와 6개월 전망은 접는다(상세 하나가 모바일에서 1,168px 이었다) */
    ((pts.length||s.out)?`<details class="note dfold"><summary>왜 그렇게 봤나 — ${esc(ptLabel)}${pts.length?" "+pts.length+"가지":""}${s.out?"와 앞으로 6개월":""}</summary><div class="dbody">`+
      (pts.length?`<span class="dlab">${esc(ptLabel)}</span><ul>${pts.map(p=>`<li>${soft(p)}</li>`).join("")}</ul>`:``)+
@@ -1673,7 +1722,7 @@ function renderBasic(s,opts){
   }
   setHTML("detail",
    `<div class="dhead"><div><h3 class="dnm">${esc(s.name)}</h3><div class="dcode">${esc(s.code)} · ${esc(s.sector||"")}</div></div></div>`+
-   (s.gated?cnoteHtml():`<div class="dsum">💡 이 종목은 이 대시보드가 자세히 정리한 20종목에 들어 있지 않아 시세만 보여드립니다. 자료가 적다는 뜻이지, 그 회사가 나쁘다는 뜻은 아닙니다.</div>`)+
+   (s.gated?cnoteHtml():`<div class="dsum">이 종목은 이 대시보드가 자세히 정리한 20종목에 들어 있지 않아 시세만 보여드립니다. 자료가 적다는 뜻이지, 그 회사가 나쁘다는 뜻은 아닙니다.</div>`)+
    liveDetail(s.code)+
    aiRowHtml()+
    `<div id="aiopinion" role="status" aria-live="polite"></div>`+
@@ -1687,19 +1736,19 @@ function renderBasic(s,opts){
 async function aiOpinion(s){
   const box=$("aiopinion"); if(!box) return;
   if(!aiOn() && !backendOn()){ box.innerHTML='<div class="aiout off">이 화면에서는 AI에게 바로 물어보는 기능을 쓸 수 없습니다.</div>'; return; }
-  box.innerHTML='<div class="aiout">🤖 Claude가 읽어보는 중…</div>';
+  box.innerHTML='<div class="aiout">Claude가 읽어보는 중…</div>';
   const v=liveMap[pad6(s.code)];
   const ctx={종목:s.name,코드:s.code,업종:s.sector,분류:(s.g==="buy"?"AI가 눈여겨본 곳":"AI가 조심스럽게 본 곳"),
     요약:s.sum,포인트:s.pts,"가장 걱정되는 점":s.risk,"앞으로 6개월":s.out,"근거가 뚜렷한 정도":s.conf,
     "지금 가격":(v&&v.price!=null?v.price+"원":"미확인"),
     등락률:(v&&typeof v.rate==="number"?v.rate+"%":"미확인")};
   /* 화면에 그대로 노출되는 문장을 만드는 지시문이므로, 전문용어 대신 쉬운 말로 답하도록 요구한다 */
-  const prompt="당신은 한국 주식을 설명하는 사람입니다. 아래 한 종목의 데이터만 근거로, 주식을 잘 모르는 사람도 알아들을 수 있게 네 가지를 각각 한 문장으로 써 주세요: (1) 이 회사가 돈을 어떻게 벌고 실적은 어떤가 (2) 최근에 누가 사고팔았고 가격은 어떻게 움직였나 (3) 가장 걱정되는 점 (4) 종합하면 어떤 회사인가. 그 뒤 마지막 줄에 '신호등: 🟢관심/🟡보통/🔴주의 중 하나 — 한 줄 이유'를 쓰세요. 전문용어(컨센서스·모멘텀·밸류에이션·수급 등)를 쓰지 말고 쉬운 우리말로 풀어 쓰세요. 이것은 투자 자문이 아니라 정보 정리이므로, 사라거나 팔라는 단정적 표현은 쓰지 마세요. 각 줄 앞에 번호를 붙이고 한국어로 간결하게 쓰세요.";
+  const prompt="당신은 한국 주식을 설명하는 사람입니다. 아래 한 종목의 데이터만 근거로, 주식을 잘 모르는 사람도 알아들을 수 있게 네 가지를 각각 한 문장으로 써 주세요: (1) 이 회사가 돈을 어떻게 벌고 실적은 어떤가 (2) 최근에 누가 사고팔았고 가격은 어떻게 움직였나 (3) 가장 걱정되는 점 (4) 종합하면 어떤 회사인가. 그 뒤 마지막 줄에 '신호등: 관심/보통/주의 중 하나 — 한 줄 이유'를 쓰세요. 전문용어(컨센서스·모멘텀·밸류에이션·수급 등)를 쓰지 말고 쉬운 우리말로 풀어 쓰세요. 이것은 투자 자문이 아니라 정보 정리이므로, 사라거나 팔라는 단정적 표현은 쓰지 마세요. 각 줄 앞에 번호를 붙이고 한국어로 간결하게 쓰세요.";
   try{
     let txt;
     if(inCowork() && aiOn()){ const out=await window.cowork.askClaude(prompt,[ctx]); txt=(typeof out==="string")?out:(out&&out.text?out.text:JSON.stringify(out)); }
     else { txt=await apiAI(ctx, prompt); }
-    box.innerHTML='<div class="aiout"><div class="aihd">🤖 Claude에게 지금 물어본 답 (위 자료와 현재 시세를 근거로)</div>'+
+    box.innerHTML='<div class="aiout"><div class="aihd">Claude에게 지금 물어본 답 (위 자료와 현재 시세를 근거로)</div>'+
       esc(txt).replace(/\n/g,"<br>")+
       '<div class="ainote">※ 이 자리에서 바로 물어볼 수 있는 AI는 Claude 한 곳입니다. 그래서 Claude가 네 가지 관점으로 나눠 답했습니다. 위쪽 &lsquo;AI 4곳은 뭐라고 했나&rsquo;는 매일 미리 정리해 둔 결과입니다.</div></div>';
   }catch(e){
@@ -1742,7 +1791,7 @@ async function doLookup(){
   const code=/^[0-9]{6}$/.test(q)?q:null;
   if(code && (inCowork()||backendOn())){
     if(looking) return; looking=true;
-    setHTML("detail",'<div class="aiout">🔎 '+esc(code)+' 시세를 확인하는 중…</div>');
+    setHTML("detail",'<div class="aiout">'+esc(code)+' 시세를 확인하는 중…</div>');
     try{
       const q1=await fetchLiveOne(code);
       const u=arr(universe).find(x=>x.code===pad6(code)); const nm=u?u.name:("종목 "+pad6(code));
@@ -1776,7 +1825,7 @@ $("chips").addEventListener("click",e=>{const t=e.target.closest?e.target.closes
 const confWord={"상":"근거 확실","중":"근거 보통","하":"근거 약함"};
 function rrow(s){
   const lp=liveStr(s.code);
-  const lite=s.light==="g"?"🟢":s.light==="y"?"🟡":"🔴";
+  const lite="";
   const liteWord=s.light==="g"?"관심":s.light==="y"?"보통":"주의";
   /* 'n/4'는 4개 AI의 투표 결과로 오해되므로 말 라벨 하나만 쓴다(툴팁 금지) */
   const cw=confWord[s.conf]||"";
@@ -1785,14 +1834,13 @@ function rrow(s){
   /* 버튼 이름은 짧게(종목명·코드·신호등), 요약과 시세는 aria-describedby 로 이어 붙인다 —
      aria-label 만 쓰면 안에 든 요약문·현재가가 낭독에서 통째로 사라진다. */
   const id=esc(s.code), al=`${s.name} ${s.code} · ${liteWord} · 자세히 보기`;
-  return `<button type="button" class="rrow" data-code="${id}" aria-label="${esc(al)}" aria-describedby="rsum-${id} rside-${id}"><span class="rlite" aria-hidden="true">${lite}</span>`+
+  return `<button type="button" class="rrow" data-code="${id}" aria-label="${esc(al)}" aria-describedby="rsum-${id} rside-${id}"><span class="rlite lab-${esc(s.light||"y")}" aria-hidden="true">${lite}</span>`+
    `<span class="rmain"><span class="rnm">${esc(s.name)}<span class="rcode">${esc(s.code)}</span><span class="rlab lab-${esc(s.light||"y")}">${liteWord}</span></span><span class="rsum" id="rsum-${id}">${plain(s.sum||"")}</span></span>`+
    `<span class="rright" id="rside-${id}">${cw?`<span class="rai">${cw}</span>`:``}<span class="rsec">${esc(s.sector||"")}</span>${lp}</span></button>`;
 }
-renderLists();
 
 // guide
-const profMeta=[{id:"stable",t:"🛡️ 안정형",d:"천천히·덜 흔들리게"},{id:"neutral",t:"⚖️ 중립형",d:"균형 있게"},{id:"growth",t:"🚀 성장형",d:"오르내림을 더 감수"},{id:"trade",t:"⚡ 단기 매매 성향",d:"짧게 사고파는 편"}];
+const profMeta=[{id:"stable",t:"안정형",d:"천천히·덜 흔들리게"},{id:"neutral",t:"중립형",d:"균형 있게"},{id:"growth",t:"성장형",d:"오르내림을 더 감수"},{id:"trade",t:"단기 매매 성향",d:"짧게 사고파는 편"}];
 $("profgrid").innerHTML=profMeta.map(p=>`<button type="button" class="profbtn" data-id="${p.id}" aria-pressed="false"><span class="pt">${p.t}</span><span class="pd">${p.d}</span></button>`).join("");
 function renderProfile(pid){
   document.querySelectorAll(".profbtn").forEach(b=>{const on=b.dataset.id===pid;b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false");});
@@ -1810,9 +1858,17 @@ document.querySelectorAll(".profbtn").forEach(b=>b.addEventListener("click",()=>
 
 // init
 renderProfile("neutral");
-renderDetail(stocks[0]);
-loadLive();
+/* 글자가 먼저 보여야 한다 — 느린 구글시트보다 content.json 을 먼저 건다 */
+renderDetail(null);
 loadContent();
+loadLive();
+/* 탭을 다시 열었을 때 한 번만 따라잡는다(자동 폴링은 하지 않는다) —
+   아침에 열어 둔 화면이 점심에도 같은 숫자를 '지금 값'처럼 들고 있었다 */
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState!=="visible") return;
+  if(liveAt && Date.now()-liveAt < 5*60*1000) return;
+  loadLive(); try{ loadMacro(); }catch(e){}
+});
 </script>
 <script>
 (function(){
@@ -1842,10 +1898,10 @@ loadContent();
   function gnoteText(){try{if(typeof globalNote!=="undefined"&&globalNote)return globalNote;}catch(e){}return "";}
   /* 본문 말투·낱말 풀이는 화면 전체에서 한 갈래로 통일한다(soft) — 없으면 기존 esc 로 물러난다 */
   function safeSoft(t){ try{ return (typeof soft==="function")?soft(t):esc(t); }catch(e){ return esc(t); } }
-  window.__gnote=function(t){var el=document.getElementById("gnote");if(el)el.innerHTML=t?("🗒️ "+safeSoft(t)):"";};
+  window.__gnote=function(t){var el=document.getElementById("gnote");if(el)el.innerHTML=t?(""+safeSoft(t)):"";};
   function card(){if(document.getElementById("globalcard"))return;
     var host=document.createElement("div");host.className="card";host.id="globalcard";
-    host.innerHTML='<h3 class="cardh"><span class="dot" aria-hidden="true" style="background:#5b8def"></span><span aria-hidden="true">🌐</span> 밤사이 해외 시장</h3><div class="sub">우리가 자는 사이 해외 시장이 어땠는지입니다. 지수는 포인트, 종목은 달러(USD). 매매 권유가 아닙니다.</div><div id="gnote" class="sub" style="color:#3b3a86;background:#eef1fe;border-radius:8px;padding:8px 10px;margin:6px 0"></div><div id="gidx" class="ticks" style="margin-top:6px"></div><div style="font-weight:600;margin:12px 2px 6px">미국의 대표적인 회사들</div><div id="gstk" class="ticks"></div><div id="gstatus" class="asof" role="status" aria-live="polite" style="margin-top:8px">불러오는 중…</div>';
+    host.innerHTML='<h3 class="cardh"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>밤사이 해외 시장</h3><div class="sub">우리가 자는 사이 해외 시장이 어땠는지입니다. 지수는 포인트, 종목은 달러(USD). 매매 권유가 아닙니다.</div><div id="gnote" class="sub" style="color:#3b3a86;background:#eef1fe;border-radius:8px;padding:8px 10px;margin:6px 0"></div><div id="gidx" class="ticks" style="margin-top:6px"></div><div style="font-weight:600;margin:12px 2px 6px">미국의 대표적인 회사들</div><div id="gstk" class="ticks"></div><div id="gstatus" class="asof" role="status" aria-live="polite" style="margin-top:8px">불러오는 중…</div>';
     var slot=document.getElementById("slot-global");
     if(slot&&slot.parentNode){slot.parentNode.insertBefore(host,slot);}
     else{var asof=document.getElementById("asof");
@@ -1931,12 +1987,12 @@ loadContent();
  function card(){
    if(document.getElementById("watchcard"))return;
    var host=document.createElement("div");host.className="card";host.id="watchcard";
-   host.innerHTML='<h2 id="h-mine"><span class="dot" aria-hidden="true" style="background:#8e7bef"></span><span aria-hidden="true">⭐</span> 내가 담아둔 종목</h2>'
+   host.innerHTML='<h2 id="h-mine"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>내가 담아둔 종목</h2>'
    +'<div class="sub">종목을 넣고 <b>평단가</b>(산 평균 가격)와 수량을 적으면 손익이 계산됩니다.</div>'+'<p class="termnote">값은 <b>이 브라우저에만 저장</b>됩니다. 목록은 본인이 고른 것이지 이 화면의 추천이 아닙니다.</p>'
-   +'<div class="lookbar" style="margin-top:6px"><label class="sr-only" for="wlq">관심종목으로 추가할 종목명 또는 6자리 코드</label><input id="wlq" list="stocklist" placeholder="예: 삼성전자, 005930, 카카오…" autocomplete="off" aria-label="관심종목으로 추가할 종목명 또는 6자리 코드"><button id="wladd" type="button" aria-label="입력한 종목을 내 목록에 추가">추가</button></div>'
-   +'<div class="wlnote" id="wlnote" role="status" aria-live="polite" hidden></div>'
    +'<div id="wlbody" tabindex="0" role="group" aria-label="내가 담아둔 종목 목록 (넓은 화면에서는 좌우로 밀 수 있습니다)" style="margin-top:8px;overflow-x:auto"></div>'
-   +'<div id="wltot" class="asof" role="status" aria-live="polite" style="margin-top:8px"></div>';
+   +'<div id="wltot" class="asof" role="status" aria-live="polite" style="margin-top:8px"></div>'
+   +'<div class="lookbar" style="margin-top:12px"><label class="sr-only" for="wlq">관심종목으로 추가할 종목명 또는 6자리 코드</label><input id="wlq" list="stocklist" placeholder="예: 삼성전자, 005930, 카카오…" autocomplete="off" aria-label="관심종목으로 추가할 종목명 또는 6자리 코드"><button id="wladd" type="button" aria-label="입력한 종목을 내 목록에 추가">추가</button></div>'
+   +'<div class="wlnote" id="wlnote" role="status" aria-live="polite" hidden></div>';
    var slot=document.getElementById("slot-watch");
    if(slot&&slot.parentNode){ slot.parentNode.insertBefore(host,slot); }
    else{ var asof=document.getElementById("asof");
@@ -1963,7 +2019,7 @@ loadContent();
          rc=b.querySelector('[data-rt="'+it.code+'"]'),
          pl=b.querySelector('[data-pl="'+it.code+'"]'),
          pr2=b.querySelector('[data-plr="'+it.code+'"]');
-     if(px) px.innerHTML=(c.pr!=null)?('<span class="'+(c.stale?"stale":"")+'">'+fmt(c.pr)+'원</span>'):('<span class="livena">'+E(missTxt())+'</span>');
+     if(px) px.innerHTML=(c.pr!=null)?('<span class="'+(c.stale?"stale":"")+'">'+fmt(c.pr)+'원'+(c.stale?' <span class="stalemark">(옛 값)</span>':'')+'</span>'):('<span class="livena">'+E(missTxt())+'</span>');
      if(rc) rc.innerHTML=(c.rt!=null)?('<span class="'+signCls(c.rt)+'">'+(c.rt===0?"보합":(c.rt>0?"▲":"▼")+Math.abs(c.rt).toFixed(2)+"%")+'</span>'):'<span class="livena">확인 불가</span>';
      if(pl) pl.innerHTML=(c.d!=null)?('<span class="'+signCls(c.d)+'">'+(c.d>0?"+":"")+fmt(c.d)+'</span>'):'<span class="livena">-</span>';
      if(pr2) pr2.innerHTML=(c.r!=null)?('<span class="'+signCls(c.r)+'">'+(c.r>0?"+":"")+c.r.toFixed(2)+'%</span>'):'<span class="livena">-</span>';
@@ -2028,7 +2084,7 @@ loadContent();
      });
    });
    b.querySelectorAll("button[data-del]").forEach(function(btn){
-     btn.addEventListener("click",function(){
+     btn.addEventListener("click",function(e){
        var code=btn.getAttribute("data-del"), before=load();
        var gone=before.find(function(x){return x.code===code;});
        save(before.filter(function(x){return x.code!==code;}));
@@ -2039,8 +2095,15 @@ loadContent();
        u.type="button"; u.className="wlundo"; u.textContent="되돌리기";
        u.addEventListener("click",function(){ if(undoSnap){save(undoSnap);undoSnap=null;render();note("");} });
        box.appendChild(u); note(box);
+       /* 표를 다시 그리면 포커스가 사라져(실측: activeElement=BODY) 키보드로는
+          8초짜리 '되돌리기'에 닿을 수 없었다 — 키보드로 지웠을 때만 그 버튼으로 옮긴다 */
+       if(e && e.detail===0){ try{ u.focus(); }catch(err){} }
        if(undoTimer) clearTimeout(undoTimer);
-       undoTimer=setTimeout(function(){undoSnap=null;note("");},8000);
+       undoTimer=setTimeout(function(){
+         var hadFocus=(document.activeElement===u);
+         undoSnap=null; note("");
+         if(hadFocus){ var qi=document.getElementById("wlq"); if(qi){ try{qi.focus();}catch(err){} } }
+       },8000);
      });
    });
    b.querySelectorAll("a.wlgo").forEach(function(a){
@@ -2138,7 +2201,7 @@ loadContent();
    if(v===0)return "보합";return (v>0?"▲":"▼")+Math.abs(v).toFixed(1)+"%";}
  function card(){if(document.getElementById("heatcard"))return;
    var host=document.createElement("div");host.className="card";host.id="heatcard";
-   host.innerHTML='<h3 class="cardh"><span class="dot" aria-hidden="true" style="background:#37b24d"></span><span aria-hidden="true">🗺️</span> 업종별 오늘 등락 지도</h3><div class="sub">이 화면이 보는 종목을 업종끼리 묶어 오늘 등락으로 칠했습니다. 빨강이 오름, 파랑이 내림이며 ▲·▼ 기호도 함께 적었습니다.</div><div id="heatbody" style="margin-top:6px"></div><div class="asof" id="heatstatus" role="status" aria-live="polite" style="margin-top:6px"></div>';
+   host.innerHTML='<h3 class="cardh"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>업종별 오늘 등락 지도</h3><div class="sub">이 화면이 보는 종목을 업종끼리 묶어 오늘 등락으로 칠했습니다. 빨강이 오름, 파랑이 내림이며 ▲·▼ 기호도 함께 적었습니다.</div><div id="heatbody" style="margin-top:6px"></div><div class="asof" id="heatstatus" role="status" aria-live="polite" style="margin-top:6px"></div>';
    var slot=document.getElementById("slot-heat");
    if(slot&&slot.parentNode){slot.parentNode.insertBefore(host,slot);return;}
    var anchor=document.getElementById("watchcard")||document.getElementById("globalcard")||document.getElementById("asof");
@@ -2188,7 +2251,7 @@ loadContent();
  function col(s){return s<45?"var(--price-down)":s<=55?"var(--muted)":"var(--price-up)";}
  function card(){if(document.getElementById("sentcard"))return;
    var host=document.createElement("div");host.className="card";host.id="sentcard";
-   host.innerHTML='<h3 class="cardh"><span class="dot" aria-hidden="true" style="background:#f59f00"></span><span aria-hidden="true">🌡️</span> 오늘 분위기</h3><div class="sub">이 화면이 보는 스무남은 종목의 오늘 등락으로만 계산한 참고 수치입니다. <b>시장 전체를 재는 지수가 아닙니다.</b></div><div id="sentbody" role="status" aria-live="polite" style="margin-top:6px"></div><div class="asof" id="sentstatus" style="margin-top:6px"></div>';
+   host.innerHTML='<h3 class="cardh"><span class="dot" aria-hidden="true" style="background:var(--accent)"></span>오늘 분위기</h3><div class="sub">이 화면이 보는 스무남은 종목의 오늘 등락으로만 계산한 참고 수치입니다. <b>시장 전체를 재는 지수가 아닙니다.</b></div><div id="sentbody" role="status" aria-live="polite" style="margin-top:6px"></div><div class="asof" id="sentstatus" style="margin-top:6px"></div>';
    var slot=document.getElementById("slot-sent");
    if(slot&&slot.parentNode){slot.parentNode.insertBefore(host,slot);return;}
    var anchor=document.getElementById("heatcard")||document.getElementById("watchcard")||document.getElementById("asof");
@@ -2206,7 +2269,7 @@ loadContent();
      +'<div aria-hidden="true" style="position:relative;height:10px;border-radius:6px;margin:8px 0;background:linear-gradient(90deg,#1565c0,#9aa0a6,#d63333)">'
      +'<div style="position:absolute;top:-3px;left:calc('+r.score+'% - 2px);width:4px;height:16px;background:var(--ink);border-radius:2px"></div></div>'
      +'<div aria-hidden="true" style="display:flex;justify-content:space-between;font-size:var(--fs-xs);color:var(--muted)"><span>많이 내림</span><span>보통</span><span>많이 오름</span></div>';
-   if(st)st.textContent="이 화면이 보는 "+r.tot+"종목 중 시세를 받은 "+r.n+"개로 계산했습니다 · 그중 "+r.up+"개가 올랐고 평균은 "+(r.avg>0?"+":"")+r.avg.toFixed(2)+"% 입니다";}
+   if(st)st.textContent="이 화면이 보는 "+r.tot+"종목 중 시세를 받은 "+r.n+"개로 계산했습니다 · 그중 "+r.up+"개가 올랐고 평균은 "+(r.avg>0?"+":"")+r.avg.toFixed(2)+"% 입니다 · "+((typeof liveAt!=="undefined"&&liveAt)?(hhmm(liveAt)+"에 받은 값(약 20분 지연)"):"약 20분 늦은 값");}
  function init(){card();render();}
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
  document.addEventListener("live:updated",render);
@@ -2226,6 +2289,7 @@ body{background-color:var(--bg);background-image:linear-gradient(180deg,var(--bg
   .card:hover{box-shadow:var(--shadow-hover);transform:translateY(-1px)}
 }
 .card h2,.card h3.cardh{border-bottom:1px solid var(--line);padding-bottom:var(--sp-2);margin-bottom:var(--sp-2)}
+.card>h2{font-size:var(--fs-lg);font-weight:800}
 .topbar h1{letter-spacing:-.3px}
 
 
@@ -2339,11 +2403,16 @@ details.note>.card>h2,details.note>.card>h3.cardh{border-bottom:0;padding-bottom
   .picksgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--sp-4)}
 }
 @media(min-width:1280px){ .wrap{max-width:1320px} }
+/* 바로가기 6칸이 390px 화면에서 459px 였다 — 마지막 칸이 화면 밖에 있었다 */
+@media(max-width:768px){
+  #quicknav a{padding:0 var(--sp-2);font-size:var(--fs-xs);flex:1 1 0;min-width:0}
+}
 
 /* ===== 상태 표시 (정확성·견고성 단계) =====================================
    값이 없다는 사실을 빈칸으로 두지 않는다. 세 상태를 눈으로 구분할 수 있게 한다. */
 .livena{color:var(--muted);font-size:var(--fs-xs);font-weight:600}
 .stale{color:var(--muted)}
+.stalemark{font-size:var(--fs-xs);font-weight:700;white-space:nowrap}
 .livebox.stalebox{background:var(--soft-neutral-bg);border-color:var(--line)}
 .livebox .livena{display:inline-block;margin-left:var(--sp-1)}
 .gna{color:var(--muted);font-weight:600}
@@ -2467,6 +2536,9 @@ details.note>summary:focus-visible{outline:2px solid var(--accent);outline-offse
   .secgroup>h2{font-size:13pt}
   details.note>summary::after{content:""}
   .cnote button,.gretry,.qhint button,.wlnote button,.livebar .livego{display:none}
+  /* 접힌 7행이 종이에서 사라지고 죽은 버튼만 찍혔다 — details 처럼 인쇄에서는 펼친다 */
+  .morewrap[hidden]{display:block!important}
+  .morebtn{display:none}
 }
 </style>
 <!-- relocate(): 제거됨. 기능 카드 4종은 정적 슬롯(#slot-sent/#slot-heat/#slot-global/#slot-watch) 자리에 형제로 삽입된다. -->
@@ -2515,7 +2587,16 @@ details.note>summary:focus-visible{outline:2px solid var(--accent);outline-offse
       var ums=Date.UTC(y,mo-1,d);
       var diff=Math.round((t.ms-ums)/86400000);
       var label=mo+"월 "+d+"일("+WK[new Date(ums).getUTCDay()]+") 분석 기준";
-      if(diff>=3) return {state:"stale", text:label, flag:diff+"일 전 분석", retry:false};
+      /* 달력 날짜로 세면 금요일 분석을 월요일에 봐도 '3일 전'이라 헛경보가 뜨고,
+         이틀 멈춘 평일 갱신은 조용히 넘어간다 → 주말을 뺀 거래일 수로 센다
+         (공휴일은 못 거른다 — 연휴 직후에는 한 칸 더 세어질 수 있다) */
+      var biz=0;
+      for(var bi=1; bi<=diff && bi<=40; bi++){
+        var bw=new Date(ums+bi*86400000).getUTCDay();
+        if(bw!==0 && bw!==6) biz++;
+      }
+      if(biz>=2) return {state:"stale", text:label, flag:biz+"거래일 전 분석 · 갱신이 멈춘 것 같습니다", retry:true};
+      if(biz===1) return {state:"ok", text:label, flag:"지난 거래일 분석", retry:false};
       return {state:"ok", text:label, flag:"", retry:false};
     }
     return {state:"loading", text:"오늘 분석 데이터를 확인하는 중…", flag:"", retry:false};
@@ -2570,6 +2651,20 @@ details.note>summary:focus-visible{outline:2px solid var(--accent);outline-offse
   }
 
   /* --- 4-1) KPI 세 번째 칸: 사실 표기(판단 라벨 없음) --- */
+  /* 아침에 묻는 것은 개수가 아니라 방향이다 — 첫 화면에서 내 종목 등락을 말해 준다 */
+  function mineStat(){
+    try{
+      var raw=localStorage.getItem("wl_v2"); if(!raw) return null;
+      var a=JSON.parse(raw); if(!Array.isArray(a)||!a.length) return null;
+      if(typeof liveMap==="undefined"||!liveMap) return null;
+      var n=0,up=0,down=0,flat=0;
+      a.forEach(function(it){
+        var v=liveMap[pad6(it&&it.code)];
+        if(v&&typeof v.rate==="number"&&isFinite(v.rate)){ n++; if(v.rate>0)up++; else if(v.rate<0)down++; else flat++; }
+      });
+      return n?{n:n,up:up,down:down,flat:flat}:null;
+    }catch(e){ return null; }
+  }
   function breadth(){
     try{
       if(typeof liveMap==="undefined" || !liveMap) return null;
@@ -2595,7 +2690,7 @@ details.note>summary:focus-visible{outline:2px solid var(--accent);outline-offse
     var st=statusParts(t), hero=heroParts(sess);
     var bf=briefParts(), mc=mineCount(), hasWatch=!!D("watchcard"), br=breadth();
     var meta=metaText(sess,t,(!!window.__macro||!!br));
-    var sig=[st.state,st.text,st.flag,hero.text,hero.pt,hero.cls,meta,bf?bf.label+"|"+bf.text:"",mc,hasWatch,br?br.n+"/"+br.up:""].join("~");
+    var sig=[st.state,st.text,st.flag,hero.text,hero.pt,hero.cls,meta,bf?bf.label+"|"+bf.text:"",mc,(function(){var m=mineStat();return m?m.up+"/"+m.down+"/"+m.flat:"";})(),hasWatch,br?br.n+"/"+br.up:""].join("~");
     if(sig===lastSig) return;
     lastSig=sig;
 
@@ -2644,7 +2739,15 @@ details.note>summary:focus-visible{outline:2px solid var(--accent);outline-offse
     if(mn){
       if(mc>0 && hasWatch){
         mn.hidden=false; mn.textContent="";
-        var sp=document.createElement("span"); sp.textContent="내 종목 "+mc+"개를 담아두셨습니다.";
+        var ms=mineStat(); var mtxt="내 종목 "+mc+"개";
+        if(ms&&ms.n){
+          var parts=[];
+          if(ms.up) parts.push("▲"+ms.up+"개");
+          if(ms.down) parts.push("▼"+ms.down+"개");
+          if(ms.flat) parts.push("보합 "+ms.flat+"개");
+          if(parts.length) mtxt+=" · 오늘 "+parts.join(" ");
+        } else { mtxt+="를 담아두셨습니다."; }
+        var sp=document.createElement("span"); sp.textContent=mtxt;
         var bt=document.createElement("button");
         bt.type="button"; bt.className="mgo"; bt.textContent="보기";
         bt.setAttribute("aria-label","내가 담아둔 종목 목록으로 이동");
